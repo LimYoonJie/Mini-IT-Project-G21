@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        {% block title %}
+        MMU second-hand marketplace
+        {% endblock %}
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/main.css') }}"
+    >
+
+</head>
+
+
+<body>
+
+
+<header class="navbar">
+
+    <div class="navbar-inner">
+
+        <a href="/" class="logo">
+            MMU second-hand marketplace
+        </a>
+
+
+        <nav class="navigation">
+
+            <a href="/">
+                Home
+            </a>
+
+            <a href="/products">
+                Products
+            </a>
+
+            <a href="#">
+                Categories
+            </a>
+
+        </nav>
+
+
+        <div class="navbar-actions">
+
+            <button class="icon-button">
+                🛒
+                <span>Cart</span>
+            </button>
+
+            <button class="account-button">
+                Account
+            </button>
+
+        </div>
+
+    </div>
+
+</header>
+
+
+<main>
+
+    {% block content %}
+    {% endblock %}
+
+</main>
+
+
+<footer class="footer">
+
+    <div class="footer-inner">
+
+        <div>
+
+            <h3>MMU second-hand marketplace</h3>
+
+            <p>
+                Your destination for quality products.
+            </p>
+
+        </div>
+
+
+        <div>
+
+            <h4>Shop</h4>
+
+            <a href="/products">
+                All Products
+            </a>
+
+            <a href="#">
+                Categories
+            </a>
+
+        </div>
+
+
+        <div>
+
+            <h4>Support</h4>
+
+            <a href="#">
+                Contact
+            </a>
+
+            <a href="#">
+                Help Centre
+            </a>
+
+        </div>
+
+    </div>
+
+
+</footer>
+
+
+<script
+    src="{{ url_for('static', filename='js/main.js') }}"
+></script>
+
+
+</body>
+
+</html>

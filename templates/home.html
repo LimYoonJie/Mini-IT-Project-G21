@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+
+
+{% block title %}
+Home | MMU second-hand marketplace
+{% endblock %}
+
+
+{% block content %}
+
+
+<section class="hero">
+
+    <div class="hero-content">
+
+        <span class="hero-label">
+            NEW COLLECTION
+        </span>
+
+
+        <h1>
+            Find products
+            <span>you'll love.</span>
+        </h1>
+
+
+        <p>
+            Discover second-hand products from MMU students.
+        
+        </p>
+
+
+        <div class="hero-buttons">
+
+            <a
+                href="/products"
+                class="btn btn-primary"
+            >
+                Shop Now
+            </a>
+
+
+            <a
+                href="/products"
+                class="btn btn-secondary"
+            >
+                Explore Products
+            </a>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<section class="section">
+
+    <div class="section-header">
+
+        <div>
+
+            <span class="section-label">
+                DISCOVER
+            </span>
+
+            <h2>
+                Featured Products
+            </h2>
+
+        </div>
+
+
+        <a
+            href="/products"
+            class="view-all"
+        >
+            View all →
+        </a>
+
+    </div>
+
+
+
+    <div class="product-grid">
+
+        {% for product in products %}
+
+        <article class="product-card">
+
+
+            <div class="product-image">
+
+                <div class="image-placeholder">
+                    PRODUCT
+                </div>
+
+            </div>
+
+
+            <div class="product-content">
+
+                <span class="product-category">
+                    {{ product.category }}
+                </span>
+
+
+                <h3>
+                    {{ product.name }}
+                </h3>
+
+
+                <p class="product-description">
+                    {{ product.description }}
+                </p>
+
+
+                <div class="product-footer">
+
+                    <strong class="product-price">
+                        RM {{ "%.2f"|format(product.price) }}
+                    </strong>
+
+
+                    <a
+                        href="/product/{{ product.id }}"
+                        class="product-button"
+                    >
+                        View
+                    </a>
+
+                </div>
+
+            </div>
+
+        </article>
+
+        {% endfor %}
+
+    </div>
+
+</section>
+
+
+<section class="feature-section">
+
+    <div class="feature">
+
+        <div class="feature-icon">
+            ✓
+        </div>
+
+        <h3>
+            Quality Products
+        </h3>
+
+        <p>
+            Carefully selected products.
+        </p>
+
+    </div>
+
+
+    <div class="feature">
+
+        <div class="feature-icon">
+            ↻
+        </div>
+
+        <h3>
+            Easy Shopping
+        </h3>
+
+        <p>
+            Simple and convenient checkout.
+        </p>
+
+    </div>
+
+
+    <div class="feature">
+
+        <div class="feature-icon">
+            ♡
+        </div>
+
+        <h3>
+            Customer First
+        </h3>
+
+        <p>
+            Your satisfaction matters.
+        </p>
+
+    </div>
+
+</section>
+
+
+{% endblock %}
