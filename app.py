@@ -6,35 +6,39 @@ app = Flask(__name__)
 products = [
     {
         "id": 1,
-        "name": "Gaming Mouse Pro",
-        "category": "Gaming",
-        "price": 99.90,
+        "name": "Cat1",
+        "category": "(category)",
+        "price": 67.00,
         "stock": 32,
-        "description": "High-performance gaming mouse with precision tracking."
+        "image": "https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif",
+        "description": "temp desc."
     },
     {
         "id": 2,
-        "name": "Mechanical Keyboard",
-        "category": "Accessories",
-        "price": 249.90,
+        "name": "Cat2",
+        "category": "(category)",
+        "price": 67.00,
         "stock": 14,
-        "description": "Mechanical keyboard designed for gaming and productivity."
+        "image": "https://media.giphy.com/media/mlvseq9yvZhba/giphy.gif",
+        "description": "temp desc."
     },
     {
         "id": 3,
-        "name": "Wireless Headset",
-        "category": "Gaming",
+        "name": "Cat3",
+        "category": "(category)",
         "price": 159.90,
         "stock": 0,
-        "description": "Wireless gaming headset with immersive audio."
+        "image": "https://media.giphy.com/media/ICOgUNjpvO0PC/giphy.gif",
+        "description": "temp desc."
     },
     {
         "id": 4,
-        "name": "4K Monitor",
-        "category": "Electronics",
+        "name": "Cat4",
+        "category": "(category)",
         "price": 1299.90,
         "stock": 8,
-        "description": "High-resolution 4K monitor for gaming and work."
+        "image": "https://media.giphy.com/media/13CoXDiaCcCoyk/giphy.gif",
+        "description": "temp desc."
     }
 ]
 
