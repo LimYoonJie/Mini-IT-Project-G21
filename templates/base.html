@@ -13,7 +13,7 @@
 
     <title>
         {% block title %}
-        MMU second-hand marketplace
+        MMU Second-Hand Marketplace
         {% endblock %}
     </title>
 
@@ -27,19 +27,17 @@
 
 <body>
 
-
 <header class="navbar">
 
     <div class="navbar-inner">
 
-        <a href="/" class="logo">
-            MMU second-hand marketplace
+        <a href="{{ url_for('home') }}" class="logo">
+            MMU Second-Hand Marketplace
         </a>
-
 
         <nav class="navigation">
 
-            <a href="/">
+            <a href="{{ url_for('home') }}">
                 Home
             </a>
 
@@ -53,17 +51,16 @@
 
         </nav>
 
-
         <div class="navbar-actions">
 
-            <button class="icon-button">
+            <a href="{{ url_for('cart') }}" class="icon-button">
                 🛒
                 <span>Cart</span>
-            </button>
+            </a>
 
-            <button class="account-button">
+            <a href="{{ url_for('login') }}" class="account-button">
                 Account
-            </button>
+            </a>
 
         </div>
 
@@ -86,10 +83,11 @@
 
         <div>
 
-            <h3>MMU second-hand marketplace</h3>
+            <h3>MMU Second-Hand Marketplace</h3>
 
             <p>
-                A place to buy and sell second-hand items at MMU from students to students.
+                A place to buy and sell second-hand items
+                at MMU from students to students.
             </p>
 
         </div>
@@ -126,14 +124,12 @@
 
     </div>
 
-
 </footer>
 
 
 <script
     src="{{ url_for('static', filename='js/main.js') }}"
 ></script>
-
 
 </body>
 

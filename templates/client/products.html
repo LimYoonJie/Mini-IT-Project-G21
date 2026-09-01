@@ -1,18 +1,17 @@
 {% extends "base.html" %}
 
 {% block title %}
-Product Management | MMU Second-Hand Marketplace
+Products | MMU Second-Hand Marketplace
 {% endblock %}
 
 {% block content %}
 
 <div class="product-header">
-    <h1>Product Management</h1>
 
-    <a href="#" class="btn btn-primary">
-        + Add Product
-    </a>
+    <h1>Products</h1>
+
 </div>
+
 
 <div class="product-grid">
 
@@ -29,6 +28,8 @@ Product Management | MMU Second-Hand Marketplace
         <div class="product-info">
 
             <h2>{{ product.name }}</h2>
+
+            <p>{{ product.category }}</p>
 
             <p>{{ product.description }}</p>
 
@@ -48,17 +49,6 @@ Product Management | MMU Second-Hand Marketplace
                 >
                     View
                 </a>
-
-                <a href="#" class="btn btn-edit">
-                    Edit
-                </a>
-
-                <button
-                    type="button"
-                    class="btn btn-delete"
-                >
-                    Delete
-                </button>
 
             </div>
 
