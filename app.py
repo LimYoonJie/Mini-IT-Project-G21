@@ -78,3 +78,25 @@ def product_detail(product_id):
 
 if __name__ == "__main__":
     app.run(debug=True)
+@app.route("/products")
+def products():
+    products = [
+        {
+            "id": 1,
+            "name": "Casio Calculator",
+            "description": "Used scientific calculator",
+            "price": 25.00,
+            "stock": 3,
+            "image": "/static/images/calculator.jpg"
+        },
+        {
+            "id": 2,
+            "name": "Computer Mouse",
+            "description": "Second-hand gaming mouse",
+            "price": 40.00,
+            "stock": 5,
+            "image": "/static/images/mouse.jpg"
+        }
+    ]
+
+    return render_template("products.html", products=products)

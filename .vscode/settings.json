@@ -1,0 +1,9 @@
+{
+  "workbench.colorCustomizations": {
+    "list.activeSelectionBackground": "#2f6fed",
+    "list.activeSelectionForeground": "#ffffff",
+    "list.inactiveSelectionBackground": "#3a3a3a",
+    "list.inactiveSelectionForeground": "#e5e7eb",
+    "gitDecoration.modifiedResourceForeground": "#f8fafc"
+  }
+}
