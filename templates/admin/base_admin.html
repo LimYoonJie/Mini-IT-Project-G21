@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        {% block title %}
+        Admin | MMU Second-Hand Marketplace
+        {% endblock %}
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/admin.css') }}"
+    >
+
+</head>
+
+
+<body>
+
+<header class="admin-navbar">
+
+    <div class="admin-navbar-inner">
+
+        <a href="{{ url_for('admin_dashboard') }}">
+            MMU Marketplace Admin
+        </a>
+
+        <nav>
+
+            <a href="{{ url_for('admin_dashboard') }}">
+                Dashboard
+            </a>
+
+            <a href="{{ url_for('admin_products') }}">
+                Products
+            </a>
+
+            <a href="{{ url_for('admin_orders') }}">
+                Orders
+            </a>
+
+            <a href="{{ url_for('admin_users') }}">
+                Users
+            </a>
+
+        </nav>
+
+    </div>
+
+</header>
+
+
+<main class="admin-content">
+
+    {% block content %}
+    {% endblock %}
+
+</main>
+
+
+<script
+    src="{{ url_for('static', filename='js/admin.js') }}"
+></script>
+
+</body>
+
+</html>

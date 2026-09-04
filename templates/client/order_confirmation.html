@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block title %}
+Order Confirmation | MMU Second-Hand Marketplace
+{% endblock %}
+
+{% block content %}
+
+<h1>Order Confirmed</h1>
+
+<p>Thank you for your purchase.</p>
+
+<a href="{{ url_for('product_list') }}" class="btn btn-primary">
+    Continue Shopping
+</a>
+
+{% endblock %}

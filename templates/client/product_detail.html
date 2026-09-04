@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}
+{{ product.name }} | MMU Second-Hand Marketplace
+{% endblock %}
+
+{% block content %}
+
+<div class="product-detail">
+
+    <div class="product-detail-image">
+
+        <img
+            src="{{ product.image }}"
+            alt="{{ product.name }}"
+        >
+
+    </div>
+
+
+    <div class="product-detail-info">
+
+        <h1>{{ product.name }}</h1>
+
+        <p>
+            Category: {{ product.category }}
+        </p>
+
+        <p class="price">
+            RM {{ "%.2f"|format(product.price) }}
+        </p>
+
+        <p>
+            {{ product.description }}
+        </p>
+
+        <p>
+            Stock available: {{ product.stock }}
+        </p>
+
+        {% if product.stock > 0 %}
+
+        <button class="btn btn-primary">
+            Add to Cart
+        </button>
+
+        {% else %}
+
+        <button class="btn" disabled>
+            Out of Stock
+        </button>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+{% endblock %}
