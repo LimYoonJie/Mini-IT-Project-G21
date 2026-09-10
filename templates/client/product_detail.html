@@ -27,7 +27,7 @@
         </p>
 
         <p class="price">
-            RM {{ "%.2f"|format(product.price) }}
+            RM {{ product.price|floatformat:2 }}
         </p>
 
         <p>

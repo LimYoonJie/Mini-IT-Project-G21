@@ -34,7 +34,7 @@ Products | MMU Second-Hand Marketplace
             <p>{{ product.description }}</p>
 
             <p class="price">
-                RM {{ "%.2f"|format(product.price) }}
+                RM {{ product.price|floatformat:2 }}
             </p>
 
             <p>
@@ -44,7 +44,7 @@ Products | MMU Second-Hand Marketplace
             <div class="product-actions">
 
                 <a
-                    href="{{ url_for('product_detail', product_id=product.id) }}"
+                    href="{% url 'product_detail' product_id=product.id %}"
                     class="btn btn-view"
                 >
                     View
