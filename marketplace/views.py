@@ -1,5 +1,6 @@
 import secrets
 from datetime import timedelta
+from decimal import Decimal, InvalidOperation
 
 from django.contrib import messages
 from django.contrib.auth import authenticate, get_user_model, login as auth_login
@@ -105,6 +106,52 @@ def product_list(request):
 
 def categories(request):
     return render(request, "client/categories.html", {"category_groups": CATEGORY_GROUPS.items()})
+
+
+@login_required(login_url="login")
+def sell(request):
+    subcategories = [subcategory for group in CATEGORY_GROUPS.values() for subcategory in group]
+    if request.method == "POST":
+        name = request.POST.get("name", "").strip()
+        category = request.POST.get("category", "").strip()
+        price_text = request.POST.get("price", "").strip()
+        condition = request.POST.get("condition", "").strip()
+        description = request.POST.get("description", "").strip()
+        image = request.POST.get("image", "").strip()
+
+        try:
+            price = Decimal(price_text)
+        except (InvalidOperation, TypeError):
+            price = Decimal("-1")
+
+        if not name or category not in subcategories:
+            messages.error(request, "Enter a product name and choose a valid category.")
+        elif price < 0:
+            messages.error(request, "Enter a valid non-negative price.")
+        elif condition not in dict(Product.CONDITION_CHOICES):
+            messages.error(request, "Choose a valid item condition.")
+        else:
+            Product.objects.create(
+                name=name,
+                category=category,
+                price=price,
+                stock=1,
+                image=image,
+                description=description,
+                condition=condition,
+                seller=request.user,
+            )
+            messages.success(request, "Your listing was published successfully.")
+            return redirect("product_list")
+
+    return render(
+        request,
+        "client/sell.html",
+        {
+            "category_groups": CATEGORY_GROUPS.items(),
+            "condition_choices": Product.CONDITION_CHOICES,
+        },
+    )
 
 
 def product_detail(request, product_id):

@@ -1127,3 +1127,40 @@ body {
     font-size: 13px;
     font-weight: 700;
 }
+
+.sell-link {
+    color: var(--primary) !important;
+}
+
+.sell-page {
+    max-width: 760px;
+    margin: 48px auto;
+    padding: 0 32px;
+}
+
+.sell-form {
+    display: grid;
+    gap: 8px;
+    margin-top: 32px;
+}
+
+.sell-form label {
+    margin-top: 12px;
+    font-weight: 700;
+}
+
+.sell-form input,
+.sell-form select,
+.sell-form textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: white;
+    font: inherit;
+}
+
+.sell-form .btn {
+    margin-top: 20px;
+    justify-self: start;
+}
