@@ -8,7 +8,46 @@ Products | MMU Second-Hand Marketplace
 
 <div class="product-header">
 
-    <h1>Products</h1>
+    <h1>{% if selected_category %}{{ selected_category }}{% else %}Products{% endif %}</h1>
+
+    <form method="GET" class="product-search">
+        <label for="product-search">Search product titles</label>
+        <input type="search" id="product-search" name="q" value="{{ search_query }}" placeholder="Search products, categories, or descriptions">
+        {% if selected_category %}
+        <input type="hidden" name="category" value="{{ selected_category }}">
+        {% endif %}
+        <input type="hidden" name="sort" value="{{ selected_sort }}">
+        {% if selected_condition %}
+        <input type="hidden" name="condition" value="{{ selected_condition }}">
+        {% endif %}
+        <button type="submit" class="btn btn-primary">Search</button>
+    </form>
+
+    <form method="GET" class="product-filters">
+        {% if selected_category %}
+        <input type="hidden" name="category" value="{{ selected_category }}">
+        {% endif %}
+        {% if search_query %}
+        <input type="hidden" name="q" value="{{ search_query }}">
+        {% endif %}
+        <label for="sort">Sort by</label>
+        <select id="sort" name="sort">
+            <option value="best" {% if selected_sort == "best" %}selected{% endif %}>Best Match</option>
+            <option value="recent" {% if selected_sort == "recent" %}selected{% endif %}>Recent</option>
+            <option value="price_high" {% if selected_sort == "price_high" %}selected{% endif %}>Price: High to Low</option>
+            <option value="price_low" {% if selected_sort == "price_low" %}selected{% endif %}>Price: Low to High</option>
+        </select>
+
+        <label for="condition">Condition</label>
+        <select id="condition" name="condition">
+            <option value="">All Conditions</option>
+            {% for value, label in condition_choices %}
+            <option value="{{ value }}" {% if selected_condition == value %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+
+        <button type="submit" class="btn btn-primary">Apply</button>
+    </form>
 
 </div>
 
@@ -37,8 +76,11 @@ Products | MMU Second-Hand Marketplace
                 RM {{ product.price|floatformat:2 }}
             </p>
 
-            <p>
-                Stock: {{ product.stock }}
+            <p class="product-condition"><strong>Condition:</strong> {{ product.condition }}</p>
+
+            <p class="listing-seller">
+                Listed by:
+                {% if product.seller %}{{ product.seller.get_full_name|default:product.seller.email }}{% else %}Marketplace seller{% endif %}
             </p>
 
             <div class="product-actions">
@@ -50,13 +92,22 @@ Products | MMU Second-Hand Marketplace
                     View
                 </a>
 
+                {% if product.stock > 0 %}
+                <form method="POST" action="{% url 'add_to_cart' product_id=product.id %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="cart">
+                    <button type="submit" class="btn btn-primary">Add to Cart</button>
+                </form>
+                <a href="{% url 'product_chat' product_id=product.id %}" class="btn btn-secondary">Make an Offer</a>
+                {% endif %}
+
             </div>
 
         </div>
 
     </div>
 
-    {% else %}
+    {% empty %}
 
     <p>No products available.</p>
 
