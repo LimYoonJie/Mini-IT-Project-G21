@@ -108,6 +108,52 @@
 
 </main>
 
+<section class="faq-chat" id="faq-chat" aria-label="Marketplace FAQ assistant">
+    <button type="button" class="faq-chat-toggle" id="faq-chat-toggle" aria-expanded="false" aria-controls="faq-chat-panel">
+        <span class="faq-chat-icon" aria-hidden="true">?</span>
+        <span>Chat with us</span>
+    </button>
+
+    <div class="faq-chat-panel" id="faq-chat-panel" role="dialog" aria-modal="false" aria-labelledby="faq-chat-title" hidden>
+        <div class="faq-chat-header">
+            <div>
+                <p class="faq-chat-eyebrow">MMU Marketplace</p>
+                <h2 id="faq-chat-title">How can we help?</h2>
+            </div>
+            <div class="faq-chat-header-actions">
+                <button type="button" class="faq-chat-minimize" id="faq-chat-minimize" aria-label="Minimize help chat" title="Minimize">&minus;</button>
+                <button type="button" class="faq-chat-close" id="faq-chat-close" aria-label="Close help chat" title="Close">&times;</button>
+            </div>
+        </div>
+
+        <div class="faq-chat-messages" id="faq-chat-messages" aria-live="polite">
+            <div class="faq-message faq-message-bot">Hi! I can answer common questions about buying, selling, accounts, delivery, and payments.</div>
+        </div>
+
+        <div class="faq-chat-quick-actions" aria-label="Frequently asked questions">
+            <button type="button" data-faq-question="How do I register?">❓ How do I register?</button>
+            <button type="button" data-faq-question="Why do I need an MMU student email?">📧 Why do I need an MMU student email?</button>
+            <button type="button" data-faq-question="How do I verify my OTP?">🔐 How do I verify my OTP?</button>
+            <button type="button" data-faq-question="How do I buy an item?">🛒 How do I buy an item?</button>
+            <button type="button" data-faq-question="How do I sell an item?">💰 How do I sell an item?</button>
+            <button type="button" data-faq-question="How do I create a listing?">📦 How do I create a listing?</button>
+            <button type="button" data-faq-question="How do I edit my listing?">✏️ How do I edit my listing?</button>
+            <button type="button" data-faq-question="How do I delete my listing?">🗑️ How do I delete my listing?</button>
+            <button type="button" data-faq-question="How does payment work?">💳 How does payment work?</button>
+            <button type="button" data-faq-question="How does delivery or pickup work?">🚚 How does delivery/pickup work?</button>
+            <button type="button" data-faq-question="How do I search for products?">🔍 How do I search for products?</button>
+            <button type="button" data-faq-question="How do I manage my account?">👤 How do I manage my account?</button>
+            <button type="button" data-faq-question="How do I report a seller or listing?">🚨 How do I report a seller/listing?</button>
+        </div>
+
+        <form class="faq-chat-form" id="faq-chat-form">
+            <label class="sr-only" for="faq-chat-input">Ask a question</label>
+            <input id="faq-chat-input" name="question" type="text" placeholder="Type your question..." autocomplete="off" maxlength="240">
+            <button type="submit" aria-label="Send question">Send</button>
+        </form>
+    </div>
+</section>
+
 
 <footer class="footer">
 
@@ -144,11 +190,11 @@
 
             <h4>Support</h4>
 
-            <a href="{% url 'product_list' %}">
+            <a href="{% url 'contact' %}">
                 Contact
             </a>
 
-            <a href="{% url 'product_list' %}">
+            <a href="#faq-chat" data-open-faq-chat>
                 Help Centre
             </a>
 

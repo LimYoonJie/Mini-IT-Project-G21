@@ -12,7 +12,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
-from .models import ChatMessage, MarketplaceProfile, PendingRegistration, Product
+from .models import ChatMessage, ListingReport, MarketplaceProfile, PendingRegistration, Product
 
 User = get_user_model()
 MMU_EMAIL_DOMAIN = "@student.mmu.edu.my"
@@ -159,6 +159,29 @@ def product_detail(request, product_id):
     return render(request, "client/product_detail.html", {"product": product})
 
 
+@require_POST
+def report_listing(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+    reason = request.POST.get("reason", "").strip()
+    details = request.POST.get("details", "").strip()
+    valid_reasons = dict(ListingReport.REASON_CHOICES)
+
+    if reason not in valid_reasons:
+        messages.error(request, "Choose a reason before submitting your report.")
+    elif reason == "other" and not details:
+        messages.error(request, "Please describe the issue when choosing Other.")
+    else:
+        ListingReport.objects.create(
+            product=product,
+            reporter=request.user if request.user.is_authenticated else None,
+            reason=reason,
+            details=details,
+        )
+        messages.success(request, "Thanks. Your report has been sent to the marketplace team.")
+
+    return redirect("product_detail", product_id=product.id)
+
+
 def cart(request):
     cart_items = _cart_items(request)
     total = sum(item["subtotal"] for item in cart_items)
@@ -262,6 +285,29 @@ def checkout(request):
 
 def order_confirmation(request):
     return render(request, "client/order_confirmation.html")
+
+
+def contact(request):
+    if request.method == "POST":
+        name = request.POST.get("name", "").strip()
+        email = request.POST.get("email", "").strip()
+        subject = request.POST.get("subject", "").strip()
+        message = request.POST.get("message", "").strip()
+
+        if not name or not email or not subject or not message:
+            messages.error(request, "Please complete all fields before sending your message.")
+        else:
+            send_mail(
+                subject=f"MMU Marketplace: {subject}",
+                message=f"From: {name} <{email}>\n\n{message}",
+                from_email=None,
+                recipient_list=["support@mmu-marketplace.local"],
+                fail_silently=True,
+            )
+            messages.success(request, "Thanks. Your message has been sent to the marketplace support team.")
+            return redirect("contact")
+
+    return render(request, "client/contact.html")
 
 
 def login(request):

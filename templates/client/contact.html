@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}
+Contact Support | MMU Second-Hand Marketplace
+{% endblock %}
+
+{% block content %}
+<section class="contact-page">
+    <div class="contact-intro">
+        <p class="section-label">SUPPORT</p>
+        <h1>Contact the marketplace team</h1>
+        <p>Tell us what happened and our support team will review your message. For quick answers, open the help assistant in the bottom corner.</p>
+    </div>
+
+    <form method="post" class="contact-form">
+        {% csrf_token %}
+        <div class="form-field-row">
+            <label>
+                Name
+                <input type="text" name="name" required maxlength="120" value="{{ request.POST.name|default:'' }}">
+            </label>
+            <label>
+                Email
+                <input type="email" name="email" required maxlength="254" value="{{ request.POST.email|default:'' }}">
+            </label>
+        </div>
+        <label>
+            Subject
+            <input type="text" name="subject" required maxlength="160" value="{{ request.POST.subject|default:'' }}">
+        </label>
+        <label>
+            Message
+            <textarea name="message" required rows="7" maxlength="2000">{{ request.POST.message|default:'' }}</textarea>
+        </label>
+        <button type="submit" class="btn btn-primary">Send message</button>
+    </form>
+</section>
+{% endblock %}
