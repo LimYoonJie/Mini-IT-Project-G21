@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 
 <html lang="en">
@@ -19,7 +20,7 @@
 
     <link
         rel="stylesheet"
-        href="{{ url_for('static', filename='css/admin.css') }}"
+        href="{% static 'css/admin.css' %}"
     >
 
 </head>
@@ -31,25 +32,25 @@
 
     <div class="admin-navbar-inner">
 
-        <a href="{{ url_for('admin_dashboard') }}">
+        <a href="{% url 'admin_dashboard' %}">
             MMU Marketplace Admin
         </a>
 
         <nav>
 
-            <a href="{{ url_for('admin_dashboard') }}">
+            <a href="{% url 'admin_dashboard' %}">
                 Dashboard
             </a>
 
-            <a href="{{ url_for('admin_products') }}">
+            <a href="{% url 'admin_products' %}">
                 Products
             </a>
 
-            <a href="{{ url_for('admin_orders') }}">
+            <a href="{% url 'admin_orders' %}">
                 Orders
             </a>
 
-            <a href="{{ url_for('admin_users') }}">
+            <a href="{% url 'admin_users' %}">
                 Users
             </a>
 
@@ -69,7 +70,7 @@
 
 
 <script
-    src="{{ url_for('static', filename='js/admin.js') }}"
+    src="{% static 'js/admin.js' %}"
 ></script>
 
 </body>

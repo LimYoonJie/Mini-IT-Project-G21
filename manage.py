@@ -1,11 +1,10 @@
-"""Django entry point kept under the original app.py filename."""
+#!/usr/bin/env python
 import os
 import sys
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "ecommerce.settings")
-
 
 def main():
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "ecommerce.settings")
     from django.core.management import execute_from_command_line
     execute_from_command_line(sys.argv)
 

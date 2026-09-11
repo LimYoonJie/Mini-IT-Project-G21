@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}Categories | MMU Second-Hand Marketplace{% endblock %}
+
+{% block content %}
+<section class="categories-page">
+    <div class="section-heading">
+        <p class="section-label">SHOP BY CATEGORY</p>
+        <h1>Find what you need</h1>
+        <p>Browse second-hand items listed by MMU students.</p>
+    </div>
+
+    <div class="category-groups">
+        {% for group, subcategories in category_groups %}
+        <section class="category-group">
+            <h2>{{ group }}</h2>
+            <div class="subcategory-list">
+                {% for subcategory in subcategories %}
+                <a href="{% url 'product_list' %}?category={{ subcategory|urlencode }}">{{ subcategory }}</a>
+                {% endfor %}
+            </div>
+        </section>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

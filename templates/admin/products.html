@@ -11,7 +11,7 @@ Manage Products | MMU Marketplace
     <h1>Product Management</h1>
 
     <a
-        href="{{ url_for('add_product') }}"
+        href="{% url 'add_product' %}"
         class="btn btn-primary"
     >
         + Add Product
@@ -40,7 +40,7 @@ Manage Products | MMU Marketplace
             </p>
 
             <p>
-                Price: RM {{ "%.2f"|format(product.price) }}
+                Price: RM {{ product.price|floatformat:2 }}
             </p>
 
             <p>
@@ -53,7 +53,7 @@ Manage Products | MMU Marketplace
         <div class="admin-product-actions">
 
             <a
-                href="{{ url_for('edit_product', product_id=product.id) }}"
+                href="{% url 'edit_product' product_id=product.id %}"
                 class="btn btn-edit"
             >
                 Edit
@@ -70,7 +70,7 @@ Manage Products | MMU Marketplace
 
     </div>
 
-    {% else %}
+    {% empty %}
 
     <p>No products available.</p>
 

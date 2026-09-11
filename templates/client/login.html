@@ -8,7 +8,8 @@ Login | MMU Second-Hand Marketplace
 
 <h1>Login</h1>
 
-<form action="#" method="POST">
+<form method="POST" class="auth-form">
+    {% csrf_token %}
 
     <label for="email">
         Email

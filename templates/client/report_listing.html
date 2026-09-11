@@ -1,0 +1,35 @@
+<button type="button" class="report-listing-button" data-report-open="report-listing-{{ product.id }}">
+    Report listing
+</button>
+
+<div class="report-modal" id="report-listing-{{ product.id }}" role="dialog" aria-modal="true" aria-labelledby="report-title-{{ product.id }}" hidden>
+    <div class="report-modal-backdrop" data-report-close></div>
+    <div class="report-modal-content">
+        <button type="button" class="report-modal-close" data-report-close aria-label="Close report form">&times;</button>
+        <p class="section-label">LISTING REPORT</p>
+        <h2 id="report-title-{{ product.id }}">What is wrong with this listing?</h2>
+        <p class="report-modal-note">Choose the reason that best describes the issue. Reports are reviewed by the marketplace team.</p>
+
+        <form method="post" action="{% url 'report_listing' product_id=product.id %}" class="report-form">
+            {% csrf_token %}
+            <label for="report-reason-{{ product.id }}">Reason</label>
+            <select id="report-reason-{{ product.id }}" name="reason" required data-report-reason>
+                <option value="">Select a reason</option>
+                <option value="offensive">Offensive behavior/content</option>
+                <option value="suspicious">Suspicious account</option>
+                <option value="counterfeit">Selling counterfeit items</option>
+                <option value="duplicate">Duplicate posts</option>
+                <option value="prohibited">Selling prohibited item</option>
+                <option value="mispriced">Mispriced listing</option>
+                <option value="category">Item wrongly categorized</option>
+                <option value="keywords">Irrelevant keywords</option>
+                <option value="other">Other</option>
+            </select>
+
+            <label for="report-details-{{ product.id }}" data-report-details-label hidden>Please specify</label>
+            <textarea id="report-details-{{ product.id }}" name="details" rows="4" maxlength="1000" placeholder="Tell us what happened..." data-report-details hidden></textarea>
+
+            <button type="submit" class="btn btn-primary">Submit report</button>
+        </form>
+    </div>
+</div>

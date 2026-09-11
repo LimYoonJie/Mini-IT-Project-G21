@@ -1,0 +1,6 @@
+[
+  {"model":"marketplace.product","pk":1,"fields":{"name":"Cat1","category":"(category)","price":"67.00","stock":32,"image":"https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif","description":"temp desc."}},
+  {"model":"marketplace.product","pk":2,"fields":{"name":"Cat2","category":"(category)","price":"67.00","stock":14,"image":"https://media.giphy.com/media/mlvseq9yvZhba/giphy.gif","description":"temp desc."}},
+  {"model":"marketplace.product","pk":3,"fields":{"name":"Cat3","category":"(category)","price":"159.90","stock":0,"image":"https://media.giphy.com/media/ICOgUNjpvO0PC/giphy.gif","description":"temp desc."}},
+  {"model":"marketplace.product","pk":4,"fields":{"name":"Cat4","category":"(category)","price":"1299.90","stock":8,"image":"https://media.giphy.com/media/13CoXDiaCcCoyk/giphy.gif","description":"temp desc."}}
+]

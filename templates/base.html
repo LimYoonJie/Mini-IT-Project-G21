@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 
 <html lang="en">
@@ -19,7 +20,13 @@
 
     <link
         rel="stylesheet"
-        href="{{ url_for('static', filename='css/main.css') }}"
+        href="{% static 'css/main.css' %}"
+    >
+
+    <link
+        rel="icon"
+        type="image/svg+xml"
+        href="{% static 'favicon.svg' %}"
     >
 
 </head>
@@ -31,36 +38,40 @@
 
     <div class="navbar-inner">
 
-        <a href="{{ url_for('home') }}" class="logo">
+        <a href="{% url 'home' %}" class="logo">
             MMU Second-Hand Marketplace
         </a>
 
         <nav class="navigation">
 
-            <a href="{{ url_for('home') }}">
+            <a href="{% url 'home' %}">
                 Home
             </a>
 
-            <a href="{{ url_for('product_list') }}">
+            <a href="{% url 'product_list' %}">
                 Products
             </a>
 
-            <a href="#">
+            <a href="{% url 'categories' %}">
                 Categories
+            </a>
+
+            <a href="{% url 'sell' %}" class="sell-link">
+                Sell
             </a>
 
         </nav>
 
         <div class="navbar-actions">
 
-            <a href="{{ url_for('cart') }}" class="icon-button">
+            <a href="{% url 'cart' %}" class="icon-button">
                 🛒
                 <span>Cart</span>
             </a>
 
-            <a href="{{ url_for('login') }}" class="account-button">
+            <button type="button" class="account-button" id="account-button" aria-haspopup="dialog" aria-controls="account-modal" onclick="document.getElementById('account-modal').removeAttribute('hidden')">
                 Account
-            </a>
+            </button>
 
         </div>
 
@@ -68,13 +79,80 @@
 
 </header>
 
+<div class="account-modal" id="account-modal" role="dialog" aria-modal="true" aria-labelledby="account-modal-title" hidden>
+    <div class="account-modal-backdrop" data-close-account-modal onclick="document.getElementById('account-modal').setAttribute('hidden', '')"></div>
+    <div class="account-modal-content">
+        <button type="button" class="account-modal-close" aria-label="Close account menu" data-close-account-modal onclick="document.getElementById('account-modal').setAttribute('hidden', '')">&times;</button>
+        <h2 id="account-modal-title">Welcome to MMU Marketplace</h2>
+        <p class="form-note">Log in to your account or create a new MMU student account.</p>
+        <div class="account-modal-actions">
+            <a href="{% url 'login' %}" class="btn btn-primary">Login</a>
+            <a href="{% url 'register' %}" class="btn btn-secondary">Register</a>
+        </div>
+    </div>
+</div>
+
 
 <main>
+
+    {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+                <p class="message message-{{ message.tags }}">{{ message }}</p>
+            {% endfor %}
+        </div>
+    {% endif %}
 
     {% block content %}
     {% endblock %}
 
 </main>
+
+<section class="faq-chat" id="faq-chat" aria-label="Marketplace FAQ assistant">
+    <button type="button" class="faq-chat-toggle" id="faq-chat-toggle" aria-expanded="false" aria-controls="faq-chat-panel">
+        <span class="faq-chat-icon" aria-hidden="true">?</span>
+        <span>Chat with us</span>
+    </button>
+
+    <div class="faq-chat-panel" id="faq-chat-panel" role="dialog" aria-modal="false" aria-labelledby="faq-chat-title" hidden>
+        <div class="faq-chat-header">
+            <div>
+                <p class="faq-chat-eyebrow">MMU Marketplace</p>
+                <h2 id="faq-chat-title">How can we help?</h2>
+            </div>
+            <div class="faq-chat-header-actions">
+                <button type="button" class="faq-chat-minimize" id="faq-chat-minimize" aria-label="Minimize help chat" title="Minimize">&minus;</button>
+                <button type="button" class="faq-chat-close" id="faq-chat-close" aria-label="Close help chat" title="Close">&times;</button>
+            </div>
+        </div>
+
+        <div class="faq-chat-messages" id="faq-chat-messages" aria-live="polite">
+            <div class="faq-message faq-message-bot">Hi! I can answer common questions about buying, selling, accounts, delivery, and payments.</div>
+        </div>
+
+        <div class="faq-chat-quick-actions" aria-label="Frequently asked questions">
+            <button type="button" data-faq-question="How do I register?">❓ How do I register?</button>
+            <button type="button" data-faq-question="Why do I need an MMU student email?">📧 Why do I need an MMU student email?</button>
+            <button type="button" data-faq-question="How do I verify my OTP?">🔐 How do I verify my OTP?</button>
+            <button type="button" data-faq-question="How do I buy an item?">🛒 How do I buy an item?</button>
+            <button type="button" data-faq-question="How do I sell an item?">💰 How do I sell an item?</button>
+            <button type="button" data-faq-question="How do I create a listing?">📦 How do I create a listing?</button>
+            <button type="button" data-faq-question="How do I edit my listing?">✏️ How do I edit my listing?</button>
+            <button type="button" data-faq-question="How do I delete my listing?">🗑️ How do I delete my listing?</button>
+            <button type="button" data-faq-question="How does payment work?">💳 How does payment work?</button>
+            <button type="button" data-faq-question="How does delivery or pickup work?">🚚 How does delivery/pickup work?</button>
+            <button type="button" data-faq-question="How do I search for products?">🔍 How do I search for products?</button>
+            <button type="button" data-faq-question="How do I manage my account?">👤 How do I manage my account?</button>
+            <button type="button" data-faq-question="How do I report a seller or listing?">🚨 How do I report a seller/listing?</button>
+        </div>
+
+        <form class="faq-chat-form" id="faq-chat-form">
+            <label class="sr-only" for="faq-chat-input">Ask a question</label>
+            <input id="faq-chat-input" name="question" type="text" placeholder="Type your question..." autocomplete="off" maxlength="240">
+            <button type="submit" aria-label="Send question">Send</button>
+        </form>
+    </div>
+</section>
 
 
 <footer class="footer">
@@ -97,11 +175,11 @@
 
             <h4>Shop</h4>
 
-            <a href="{{ url_for('product_list') }}">
+            <a href="{% url 'product_list' %}">
                 All Products
             </a>
 
-            <a href="#">
+            <a href="{% url 'categories' %}">
                 Categories
             </a>
 
@@ -112,11 +190,11 @@
 
             <h4>Support</h4>
 
-            <a href="#">
+            <a href="{% url 'contact' %}">
                 Contact
             </a>
 
-            <a href="#">
+            <a href="#faq-chat" data-open-faq-chat>
                 Help Centre
             </a>
 
@@ -128,7 +206,7 @@
 
 
 <script
-    src="{{ url_for('static', filename='js/main.js') }}"
+    src="{% static 'js/main.js' %}?v=2"
 ></script>
 
 </body>
