@@ -1,0 +1,13 @@
+1. python manage.py runserver
+2. python manage.py makemigrations (prepare database)
+3. python manage.py migrate (update database)
+4. python manage.py createsuperuser (create admin)
+5. python manage.py changepassword
+
+models.py (setup database columns)
+views.py (control page data)
+urls.py (set web links)
+admin.py (setup admin web)
+base.html (Main website frame)
+home.html 
+products.html (product list page)

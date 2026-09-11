@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="bg-white p-5 rounded shadow-sm text-center my-5">
+    <h1 class="fw-bold text-dark mb-3">Contact Us</h1>
+    <p class="text-muted fs-5 mb-4">Have questions or feedback? We'd love to hear from you!</p>
+    <form>
+        <div class="form-group">
+            <input type="text" class="form-control" placeholder="Your Name">
+        </div>
+        <div class="form-group">
+            <input type="email" class="form-control" placeholder="Your Email">
+        </div>
+        <div class="form-group">
+            <textarea class="form-control" rows="5" placeholder="Your Message"></textarea>
+        </div>
+        <button type="submit" class="btn btn-info btn-lg px-4 fw-bold rounded-pill text-white">
+            Send Message
+        </button>
+    </form>
+</div>
+{% endblock %}
