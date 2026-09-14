@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}
+Admin Login | MMU Second-Hand Marketplace
+{% endblock %}
+
+{% block content %}
+
+<div class="login-container">
+
+    <h1>Admin Login</h1>
+
+    <form action="#" method="POST">
+
+        <label for="username">
+            Username
+        </label>
+
+        <input
+            type="text"
+            id="username"
+            name="username"
+            required
+        >
+
+
+        <label for="password">
+            Password
+        </label>
+
+        <input
+            type="password"
+            id="password"
+            name="password"
+            required
+        >
+
+
+        <button type="submit" class="btn btn-primary">
+            Login
+        </button>
+
+    </form>
+
+</div>
+
+{% endblock %}

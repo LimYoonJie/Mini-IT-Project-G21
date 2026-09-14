@@ -1,0 +1,100 @@
+{% extends "admin/base_admin.html" %}
+
+{% block title %}
+Edit Product | MMU Marketplace
+{% endblock %}
+
+{% block content %}
+
+<h1>Edit Product</h1>
+
+<form class="product-form" action="#" method="POST">
+
+    <label for="name">
+        Product Name
+    </label>
+
+    <input
+        type="text"
+        id="name"
+        name="name"
+        value="{{ product.name }}"
+        required
+    >
+
+
+    <label for="category">
+        Category
+    </label>
+
+    <input
+        type="text"
+        id="category"
+        name="category"
+        value="{{ product.category }}"
+        required
+    >
+
+
+    <label for="price">
+        Price
+    </label>
+
+    <input
+        type="number"
+        id="price"
+        name="price"
+        value="{{ product.price }}"
+        step="0.01"
+        min="0"
+        required
+    >
+
+
+    <label for="stock">
+        Stock
+    </label>
+
+    <input
+        type="number"
+        id="stock"
+        name="stock"
+        value="{{ product.stock }}"
+        min="0"
+        required
+    >
+
+
+    <label for="description">
+        Description
+    </label>
+
+    <textarea
+        id="description"
+        name="description"
+        rows="5"
+    >{{ product.description }}</textarea>
+
+
+    <label for="image">
+        Image URL
+    </label>
+
+    <input
+        type="text"
+        id="image"
+        name="image"
+        value="{{ product.image }}"
+    >
+
+
+    <button
+        type="submit"
+        class="btn btn-primary"
+    >
+        Save Changes
+    </button>
+
+</form>
+
+{% endblock %}

@@ -1,0 +1,32 @@
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path("", views.home, name="home"),
+    path("products", views.product_list, name="product_list"),
+    path("categories", views.categories, name="categories"),
+    path("sell", views.sell, name="sell"),
+    path("product/<int:product_id>", views.product_detail, name="product_detail"),
+    path("product/<int:product_id>/chat", views.product_chat, name="product_chat"),
+    path("product/<int:product_id>/report", views.report_listing, name="report_listing"),
+    path("cart", views.cart, name="cart"),
+    path("cart/add/<int:product_id>", views.add_to_cart, name="add_to_cart"),
+    path("cart/update/<int:product_id>", views.update_cart, name="update_cart"),
+    path("cart/remove/<int:product_id>", views.remove_from_cart, name="remove_from_cart"),
+    path("checkout", views.checkout, name="checkout"),
+    path("order-confirmation", views.order_confirmation, name="order_confirmation"),
+    path("login", views.login, name="login"),
+    path("register", views.register, name="register"),
+    path("register/verify", views.verify_registration, name="verify_registration"),
+    path("register/resend", views.resend_registration_otp, name="resend_registration_otp"),
+    path("profile", views.profile, name="profile"),
+    path("contact", views.contact, name="contact"),
+    path("admin/login", views.admin_login, name="admin_login"),
+    path("admin", views.admin_dashboard, name="admin_dashboard"),
+    path("admin/products", views.admin_products, name="admin_products"),
+    path("admin/products/add", views.add_product, name="add_product"),
+    path("admin/products/edit/<int:product_id>", views.edit_product, name="edit_product"),
+    path("admin/orders", views.admin_orders, name="admin_orders"),
+    path("admin/order/<int:order_id>", views.admin_order_detail, name="admin_order_detail"),
+    path("admin/users", views.admin_users, name="admin_users"),
+]

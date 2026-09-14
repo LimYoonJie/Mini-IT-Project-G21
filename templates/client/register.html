@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}
+Register | MMU Second-Hand Marketplace
+{% endblock %}
+
+{% block content %}
+
+<h1>Create Account</h1>
+
+<form method="POST" class="auth-form">
+    {% csrf_token %}
+
+    <label for="name">
+        Name
+    </label>
+
+    <input
+        type="text"
+        id="name"
+        name="name"
+        required
+    >
+
+    <label for="email">
+        Email
+    </label>
+
+    <input
+        type="email"
+        id="email"
+        name="email"
+        required
+    >
+
+    <label for="password">
+        Password
+    </label>
+
+    <input
+        type="password"
+        id="password"
+        name="password"
+        required
+    >
+
+    <label for="confirm_password">
+        Confirm Password
+    </label>
+
+    <input
+        type="password"
+        id="confirm_password"
+        name="confirm_password"
+        required
+    >
+
+    <button type="submit" class="btn btn-primary">
+        Register
+    </button>
+
+</form>
+
+<p class="form-note">Only MMU student accounts ending in @student.mmu.edu.my can register.</p>
+
+<script>
+    const password = document.getElementById("password");
+    const confirmPassword = document.getElementById("confirm_password");
+    confirmPassword.addEventListener("input", () => {
+        confirmPassword.setCustomValidity(
+            password.value === confirmPassword.value ? "" : "Passwords do not match."
+        );
+    });
+</script>
+
+{% endblock %}

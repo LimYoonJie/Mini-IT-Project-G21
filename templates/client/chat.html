@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}Make an Offer | MMU Second-Hand Marketplace{% endblock %}
+
+{% block content %}
+<section class="chat-page">
+    <a href="{% url 'product_detail' product_id=product.id %}" class="back-link">Back to listing</a>
+    <h1>Chat with {{ seller_name }}</h1>
+    <div class="chat-listing">
+        <img src="{{ product.image }}" alt="{{ product.name }}">
+        <div>
+            <h2>{{ product.name }}</h2>
+            <p>Listed price: RM {{ product.price|floatformat:2 }}</p>
+        </div>
+    </div>
+
+    <div class="chat-messages">
+        {% for chat_message in chat_messages %}
+            <p class="chat-message">{{ chat_message.message }} <small>{{ chat_message.created_at|date:"d M Y, H:i" }}</small></p>
+        {% empty %}
+            <p class="form-note">Start the conversation by making an offer.</p>
+        {% endfor %}
+    </div>
+
+    <form method="POST" class="chat-form">
+        {% csrf_token %}
+        <label for="message">Your offer or message</label>
+        <textarea id="message" name="message" rows="4" placeholder="Example: Hi, would you accept RM 50?" required></textarea>
+        <button type="submit" class="btn btn-primary">Send to Seller</button>
+    </form>
+</section>
+{% endblock %}

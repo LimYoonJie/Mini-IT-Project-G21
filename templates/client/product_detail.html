@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}
+{{ product.name }} | MMU Second-Hand Marketplace
+{% endblock %}
+
+{% block content %}
+
+<div class="product-detail">
+
+    <div class="product-detail-image">
+
+        <img
+            src="{{ product.image }}"
+            alt="{{ product.name }}"
+        >
+
+    </div>
+
+
+    <div class="product-detail-info">
+
+        <h1>{{ product.name }}</h1>
+
+        <p>
+            Category: {{ product.category }}
+        </p>
+
+        <p class="price">
+            RM {{ product.price|floatformat:2 }}
+        </p>
+
+        <p>
+            {{ product.description }}
+        </p>
+
+        <p class="product-condition"><strong>Item condition:</strong> {{ product.condition }}</p>
+
+        <p class="listing-seller">
+            Listed by:
+            {% if product.seller %}
+                {{ product.seller.get_full_name|default:product.seller.email }}
+            {% else %}
+                Marketplace seller
+            {% endif %}
+        </p>
+
+        {% if product.stock > 0 %}
+
+        <div class="product-actions">
+            <form method="POST" action="{% url 'add_to_cart' product_id=product.id %}">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="cart">
+            <button type="submit" class="btn btn-primary">
+            Add to Cart
+            </button>
+            </form>
+            <a href="{% url 'product_chat' product_id=product.id %}" class="btn btn-secondary">Make an Offer</a>
+        </div>
+
+        {% else %}
+
+        <button class="btn" disabled>
+            Out of Stock
+        </button>
+
+        {% endif %}
+
+    </div>
+
+        {% include "client/report_listing.html" with product=product %}
+
+</div>
+
+{% endblock %}

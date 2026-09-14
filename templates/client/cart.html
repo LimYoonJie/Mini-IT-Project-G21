@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}
+Cart | MMU Second-Hand Marketplace
+{% endblock %}
+
+{% block content %}
+
+<h1>Your Cart</h1>
+
+{% if cart_items %}
+<div class="cart-list">
+    {% for item in cart_items %}
+    <article class="cart-item">
+        <img src="{{ item.product.image }}" alt="{{ item.product.name }}" class="cart-item-image">
+        <div class="cart-item-info">
+            <h2>{{ item.product.name }}</h2>
+            <p>RM {{ item.product.price|floatformat:2 }}</p>
+            <p>Subtotal: RM {{ item.subtotal|floatformat:2 }}</p>
+        </div>
+        <form method="POST" action="{% url 'remove_from_cart' product_id=item.product.id %}">
+            {% csrf_token %}
+            <button type="submit" class="cart-remove">Remove</button>
+        </form>
+    </article>
+    {% endfor %}
+</div>
+<div class="cart-summary">
+    <strong>Total: RM {{ total|floatformat:2 }}</strong>
+    <a href="{% url 'checkout' %}" class="btn btn-primary">Checkout</a>
+</div>
+{% else %}
+<p>Your cart is currently empty.</p>
+{% endif %}
+
+<a href="{% url 'product_list' %}" class="btn btn-primary">
+    Continue Shopping
+</a>
+
+{% endblock %}
