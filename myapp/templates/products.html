@@ -11,7 +11,7 @@
 
 <div class="row row-cols-1 row-cols-md-3 row-cols-lg-4 g-4">
     {% for product in products %}
-    <div class="col">
+    <div class="col-md-4 col-sm-6 mb-4">
         <div class="card h-100 shadow-sm border-0 position-relative">
             <!-- Sold Out -->
             {% if product.sold_out %}
@@ -23,7 +23,7 @@
             <img src="{{ product.image.url }}" class="card-img-top" alt="{{ product.title }}" style="height: 200px; object-fit: cover;">
             {% else %}
             <div class="bg-secondary text-white d-flex align-items-center justify-content-center" style="height: 200px;">
-                <i class="fa-regular fa-image fa-2x"></i>
+                <span class="fw-bold">No Image Available</span>
             </div>
             {% endif %}
 
@@ -43,7 +43,7 @@
     </div>
     {% empty %}
     <div class="col-12 text-center my-5">
-        <p class="text-muted fs-5">No products listed on campus yet.</p>
+        <p class="text-muted fs-5">No products available.</p>
     </div>
     {% endfor %}
 </div>
