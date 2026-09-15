@@ -35,6 +35,7 @@ class MarketplaceProfile(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     is_buyer = models.BooleanField(default=True)
     is_seller = models.BooleanField(default=True)
+    profile_picture = models.ImageField(upload_to="profile_pictures/", blank=True, null=True)
 
     def __str__(self):
         return self.user.email

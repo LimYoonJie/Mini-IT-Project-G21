@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}
+Verify Account Change | MMU Second-Hand Marketplace
+{% endblock %}
+
+{% block content %}
+<section class="auth-form">
+    <div class="section-heading">
+        <p class="section-label">VERIFY CHANGE</p>
+        <h1>Enter the 6-digit code</h1>
+        <p>We sent a verification code to {{ email }}.</p>
+    </div>
+
+    <form method="POST">
+        {% csrf_token %}
+        <label for="otp">Verification code</label>
+        <input type="text" id="otp" name="otp" maxlength="6" pattern="[0-9]{6}" required>
+        <button type="submit" class="btn btn-primary">Verify</button>
+    </form>
+</section>
+{% endblock %}

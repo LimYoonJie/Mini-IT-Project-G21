@@ -5,18 +5,109 @@ My Profile | MMU Second-Hand Marketplace
 {% endblock %}
 
 {% block content %}
-
 <section class="profile-page">
-    <div class="section-heading">
-        <p class="section-label">ACCOUNT</p>
-        <h1>My Profile</h1>
+    <div class="profile-header-card">
+        <div class="profile-avatar-wrap">
+            {% if profile_obj.profile_picture %}
+                <img src="{{ profile_obj.profile_picture.url }}" alt="{{ request.user.get_full_name|default:request.user.email }}" class="profile-avatar">
+            {% else %}
+                <div class="profile-avatar profile-avatar-placeholder">{{ profile_initials }}</div>
+            {% endif %}
+        </div>
+
+        <div class="profile-user-info">
+            <p class="section-label">MY ACCOUNT</p>
+            <h1>{{ request.user.get_full_name|default:request.user.email }}</h1>
+            <p>{{ request.user.email }}</p>
+        </div>
+
+        <div class="profile-actions">
+            <form method="POST" enctype="multipart/form-data" class="profile-upload-form">
+                {% csrf_token %}
+                <label for="profile_picture" class="btn btn-secondary">Upload Picture</label>
+                <input type="file" id="profile_picture" name="profile_picture" accept="image/*" hidden>
+                <button type="submit" class="btn btn-primary">Save</button>
+            </form>
+            <a href="{% url 'account_settings' %}" class="btn btn-secondary">Account Settings</a>
+            <form method="POST" action="{% url 'logout' %}" class="profile-logout-form">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger">Logout</button>
+            </form>
+        </div>
     </div>
 
-    <div class="profile-card">
-        <p><strong>Name:</strong> {{ request.user.get_full_name|default:"Not provided" }}</p>
-        <p><strong>Email:</strong> {{ request.user.email }}</p>
-        <p><strong>Username:</strong> {{ request.user.username }}</p>
+    <div class="profile-sections">
+        <section class="profile-panel">
+            <div class="section-header">
+                <div>
+                    <span class="section-label">SELLING</span>
+                    <h2>My Listings</h2>
+                </div>
+            </div>
+
+            {% if selling_products %}
+                <div class="product-grid">
+                    {% for product in selling_products %}
+                        <article class="product-card">
+                            <div class="product-image">
+                                {% if product.image %}
+                                    <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-image-gif">
+                                {% else %}
+                                    <span class="image-placeholder">No image</span>
+                                {% endif %}
+                            </div>
+                            <div class="product-content">
+                                <span class="product-category">{{ product.category }}</span>
+                                <h3>{{ product.name }}</h3>
+                                <p class="product-description">{{ product.description|truncatechars:80 }}</p>
+                                <div class="product-footer">
+                                    <strong class="product-price">RM {{ product.price|floatformat:2 }}</strong>
+                                    <a href="{% url 'product_detail' product_id=product.id %}" class="product-button">View</a>
+                                </div>
+                            </div>
+                        </article>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="empty-state">You have not listed any items for sale yet.</p>
+            {% endif %}
+        </section>
+
+        <section class="profile-panel">
+            <div class="section-header">
+                <div>
+                    <span class="section-label">BUYING</span>
+                    <h2>Purchased Items</h2>
+                </div>
+            </div>
+
+            {% if buying_products %}
+                <div class="product-grid">
+                    {% for product in buying_products %}
+                        <article class="product-card">
+                            <div class="product-image">
+                                {% if product.image %}
+                                    <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-image-gif">
+                                {% else %}
+                                    <span class="image-placeholder">No image</span>
+                                {% endif %}
+                            </div>
+                            <div class="product-content">
+                                <span class="product-category">{{ product.category }}</span>
+                                <h3>{{ product.name }}</h3>
+                                <p class="product-description">{{ product.description|truncatechars:80 }}</p>
+                                <div class="product-footer">
+                                    <strong class="product-price">RM {{ product.price|floatformat:2 }}</strong>
+                                    <a href="{% url 'product_detail' product_id=product.id %}" class="product-button">View</a>
+                                </div>
+                            </div>
+                        </article>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="empty-state">No purchases yet. Start shopping to see your bought items here.</p>
+            {% endif %}
+        </section>
     </div>
 </section>
-
 {% endblock %}

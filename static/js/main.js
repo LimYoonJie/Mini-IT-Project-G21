@@ -1,3 +1,18 @@
+const themeToggle = document.querySelector("[data-theme-toggle]");
+const documentRoot = document.documentElement;
+
+const setTheme = (theme) => {
+	documentRoot.dataset.theme = theme;
+	localStorage.setItem("mmuTheme", theme);
+};
+
+if (themeToggle) {
+	themeToggle.checked = documentRoot.dataset.theme === "dark";
+	themeToggle.addEventListener("change", () => {
+		setTheme(themeToggle.checked ? "dark" : "light");
+	});
+}
+
 const accountButton = document.getElementById("account-button");
 const accountModal = document.getElementById("account-modal");
 

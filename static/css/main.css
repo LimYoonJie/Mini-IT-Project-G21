@@ -15,6 +15,17 @@
 
 }
 
+html[data-theme="dark"] {
+    --background: #0b1120;
+    --surface: #111827;
+    --surface-raised: #172033;
+    --text: #f8fafc;
+    --muted: #a8b3c7;
+    --border: #2d3a50;
+    --primary: #60a5fa;
+    --primary-dark: #93c5fd;
+}
+
 
 * {
 
@@ -818,6 +829,259 @@ body {
     margin-top: 24px;
 }
 
+.profile-page {
+    max-width: 1216px;
+    margin: 32px auto 0;
+    padding: 0 32px 64px;
+}
+
+.profile-header-card {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    padding: 28px;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
+}
+
+.profile-avatar-wrap {
+    flex-shrink: 0;
+}
+
+.profile-avatar {
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #dbeafe;
+    background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+}
+
+.profile-avatar-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 34px;
+    font-weight: 800;
+    color: var(--primary);
+}
+
+.profile-user-info {
+    flex: 1;
+}
+
+.profile-user-info h1 {
+    font-size: clamp(28px, 3vw, 40px);
+    line-height: 1.1;
+}
+
+.profile-user-info p:last-child {
+    color: var(--muted);
+    margin-top: 8px;
+}
+
+.profile-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-left: auto;
+    flex-wrap: wrap;
+}
+
+.profile-upload-form,
+.profile-logout-form {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.profile-sections {
+    display: grid;
+    gap: 28px;
+    margin-top: 28px;
+}
+
+.profile-panel {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 24px;
+}
+
+.settings-panel {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    margin-top: 18px;
+}
+
+.settings-panel h2 {
+    margin-bottom: 16px;
+    font-size: 20px;
+}
+
+.theme-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.theme-toggle input {
+    width: 18px;
+    height: 18px;
+}
+
+.settings-layout {
+    display: grid;
+    grid-template-columns: 170px minmax(0, 1fr);
+    gap: 28px;
+    max-width: 760px;
+    margin-top: 28px;
+}
+
+.settings-nav {
+    position: sticky;
+    top: 96px;
+    align-self: start;
+    display: grid;
+    gap: 6px;
+}
+
+.settings-nav-link {
+    padding: 10px 12px;
+    border-left: 2px solid transparent;
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.settings-nav-link:hover,
+.settings-nav-link:focus {
+    border-left-color: var(--primary);
+    background: var(--surface-raised, #f8fafc);
+    color: var(--primary);
+}
+
+.settings-content {
+    display: grid;
+    gap: 18px;
+}
+
+.settings-panel {
+    scroll-margin-top: 96px;
+}
+
+.settings-kicker {
+    margin-bottom: 7px;
+    color: var(--primary);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1.3px;
+}
+
+.settings-description {
+    margin: -8px 0 18px;
+    color: var(--muted);
+    font-size: 14px;
+}
+
+.theme-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 14px 0 2px;
+}
+
+.theme-toggle input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.theme-toggle-copy {
+    display: grid;
+    gap: 2px;
+}
+
+.theme-toggle-copy small {
+    color: var(--muted);
+    font-size: 13px;
+    font-weight: 400;
+}
+
+.theme-toggle-track {
+    width: 48px;
+    height: 26px;
+    flex-shrink: 0;
+    padding: 3px;
+    border-radius: 20px;
+    background: #cbd5e1;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.theme-toggle-track span {
+    display: block;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: white;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.3);
+    transition: transform 0.2s ease;
+}
+
+.theme-toggle input:checked + .theme-toggle-track {
+    background: var(--primary);
+}
+
+.theme-toggle input:checked + .theme-toggle-track span {
+    transform: translateX(22px);
+}
+
+.empty-state {
+    margin-top: 18px;
+    color: var(--muted);
+}
+
+.product-owner-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 18px;
+    flex-wrap: wrap;
+}
+
+.btn-danger {
+    background: #ef4444;
+    border-color: #ef4444;
+    color: white;
+}
+
+@media (max-width: 768px) {
+    .profile-header-card {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .profile-upload-form,
+    .profile-logout-form {
+        width: 100%;
+        margin-left: 0;
+    }
+
+    .profile-upload-form .btn,
+    .profile-logout-form .btn {
+        flex: 1;
+        text-align: center;
+    }
+}
+
 .form-note {
     max-width: 520px;
     margin: 16px auto 0;
@@ -1524,4 +1788,127 @@ body {
 
 .report-form .btn {
     margin-top: 8px;
+}
+
+/* Keep every shared surface readable when the saved theme is dark. */
+html[data-theme="dark"] body {
+    background: var(--background);
+    color: var(--text);
+}
+
+html[data-theme="dark"] .navbar,
+html[data-theme="dark"] .product-card,
+html[data-theme="dark"] .feature-section,
+html[data-theme="dark"] .profile-header-card,
+html[data-theme="dark"] .profile-panel,
+html[data-theme="dark"] .settings-panel,
+html[data-theme="dark"] .category-group,
+html[data-theme="dark"] .account-modal-content,
+html[data-theme="dark"] .report-modal-content,
+html[data-theme="dark"] .faq-chat-panel {
+    background: var(--surface);
+    border-color: var(--border);
+    color: var(--text);
+}
+
+html[data-theme="dark"] .navbar {
+    background: rgba(17, 24, 39, 0.95);
+}
+
+html[data-theme="dark"] .hero,
+html[data-theme="dark"] .profile-avatar {
+    background: linear-gradient(135deg, #172554, #1e3a8a);
+}
+
+html[data-theme="dark"] .logo,
+html[data-theme="dark"] .navigation a,
+html[data-theme="dark"] .icon-button,
+html[data-theme="dark"] .account-button,
+html[data-theme="dark"] .btn-secondary,
+html[data-theme="dark"] .subcategory-list a,
+html[data-theme="dark"] .product-filters select,
+html[data-theme="dark"] .sell-form input,
+html[data-theme="dark"] .sell-form select,
+html[data-theme="dark"] .sell-form textarea,
+html[data-theme="dark"] .quantity-form button,
+html[data-theme="dark"] .faq-chat-quick-actions button {
+    background: var(--surface-raised);
+    color: var(--text);
+    border-color: var(--border);
+}
+
+html[data-theme="dark"] input,
+html[data-theme="dark"] textarea,
+html[data-theme="dark"] select,
+html[data-theme="dark"] .faq-chat-form input {
+    background: #0b1220;
+    color: var(--text);
+    border-color: var(--border);
+}
+
+html[data-theme="dark"] .product-image,
+html[data-theme="dark"] .cart-item-image,
+html[data-theme="dark"] .subcategory-list a:hover,
+html[data-theme="dark"] .product-button,
+html[data-theme="dark"] .feature-icon,
+html[data-theme="dark"] .chat-message,
+html[data-theme="dark"] .faq-message-bot,
+html[data-theme="dark"] .message {
+    background: #172554;
+    color: #dbeafe;
+}
+
+html[data-theme="dark"] .footer {
+    background: #050914;
+}
+
+html[data-theme="dark"] .footer p,
+html[data-theme="dark"] .footer a,
+html[data-theme="dark"] .image-placeholder,
+html[data-theme="dark"] .faq-message-typing {
+    color: var(--muted);
+}
+
+html[data-theme="dark"] .message-error {
+    background: #451a1a;
+    color: #fecaca;
+}
+
+html[data-theme="dark"] .report-listing-button,
+html[data-theme="dark"] .cart-remove {
+    color: #fca5a5;
+}
+
+html[data-theme="dark"] .faq-chat-quick-actions button {
+    color: #bfdbfe;
+}
+
+html[data-theme="dark"] .faq-chat-header {
+    background: #172554;
+}
+
+@media (max-width: 700px) {
+    .settings-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .settings-nav {
+        position: static;
+        display: flex;
+        overflow-x: auto;
+        gap: 4px;
+        padding-bottom: 4px;
+    }
+
+    .settings-nav-link {
+        border-bottom: 2px solid transparent;
+        border-left: 0;
+        white-space: nowrap;
+    }
+
+    .settings-nav-link:hover,
+    .settings-nav-link:focus {
+        border-bottom-color: var(--primary);
+        border-left: 0;
+    }
 }
