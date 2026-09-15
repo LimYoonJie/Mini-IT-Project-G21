@@ -21,4 +21,30 @@ class ProductAdmin(admin.ModelAdmin):
     list_filter = ('sold_out', 'date')
     search_fields = ('title', 'description')
 
-admin.site.register(Product, ProductAdmin)
+#admin.site.register(Product, ProductAdmin)
+
+from django.contrib import admin
+from .models import Product, Order
+
+@admin.register(Product)
+class ProductAdmin(admin.ModelAdmin):
+    list_display = ('id', 'title', 'price', 'sold_out', 'date')
+    list_filter = ('sold_out', 'date')
+    search_fields = ('title', 'description')
+
+
+@admin.register(Order)
+class OrderAdmin(admin.ModelAdmin):
+    list_display = ('id', 'buyer', 'product', 'price', 'status', 'created_at')
+    list_filter = ('status', 'created_at')
+    actions = ['mark_as_completed', 'mark_as_cancelled']
+
+    @admin.action(description='Mark selected orders as Completed')
+    def mark_as_completed(self, request, queryset):
+        queryset.update(status='completed')
+        self.message_user(request, "Selected orders have been marked as Completed.")
+
+    @admin.action(description='Mark selected orders as Cancelled')
+    def mark_as_cancelled(self, request, queryset):
+        queryset.update(status='cancelled')
+        self.message_user(request, "Selected orders have been marked as Cancelled.")

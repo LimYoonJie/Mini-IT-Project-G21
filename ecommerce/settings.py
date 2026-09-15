@@ -8,6 +8,7 @@ DEBUG = True
 ALLOWED_HOSTS = ["127.0.0.1", "localhost", "0.0.0.0", "[::1]", "testserver"]
 
 INSTALLED_APPS = [
+    "simpleui",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -15,6 +16,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "marketplace",
+    "myapp",
 ]
 
 MIDDLEWARE = [
@@ -75,3 +77,13 @@ EMAIL_USE_TLS = os.environ.get("EMAIL_USE_TLS", "True").lower() == "true"
 EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
 DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "no-reply@mmu-marketplace.local")
+
+
+SIMPLEUI_HOME_INFO = False
+SIMPLEUI_HOME_QUICK = False
+SIMPLEUI_LOGO = '-' 
+SIMPLEUI_VIEW_SITE = True
+SIMPLEUI_INDEX = '/admin/dashboard/'
+
+LOGIN_REDIRECT_URL = '/admin/'
+LOGOUT_REDIRECT_URL = '/admin/login/'
