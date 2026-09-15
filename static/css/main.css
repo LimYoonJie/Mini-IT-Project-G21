@@ -16,12 +16,12 @@
 }
 
 html[data-theme="dark"] {
-    --background: #0b1120;
-    --surface: #111827;
-    --surface-raised: #172033;
+    --background: #000000;
+    --surface: #0b0b0b;
+    --surface-raised: #151515;
     --text: #f8fafc;
-    --muted: #a8b3c7;
-    --border: #2d3a50;
+    --muted: #a3a3a3;
+    --border: #292929;
     --primary: #60a5fa;
     --primary-dark: #93c5fd;
 }
@@ -145,13 +145,41 @@ body {
 
     display: flex;
 
+    align-items: center;
+
     gap: 10px;
 
 }
 
+.profile-summary {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.profile-name {
+    max-width: 150px;
+    overflow: hidden;
+    color: var(--muted);
+    font-size: 13px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 
 .icon-button,
-.account-button {
+.account-button,
+.profile-button {
+
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    width: 112px;
+
+    min-height: 42px;
 
     padding: 10px 14px;
 
@@ -938,10 +966,16 @@ body {
 
 .settings-layout {
     display: grid;
-    grid-template-columns: 170px minmax(0, 1fr);
-    gap: 28px;
-    max-width: 760px;
+    grid-template-columns: 210px minmax(0, 1fr);
+    gap: 48px;
+    max-width: none;
     margin-top: 28px;
+}
+
+.settings-page {
+    max-width: 1280px;
+    margin: 48px auto 0;
+    padding: 0 32px 80px;
 }
 
 .settings-nav {
@@ -970,11 +1004,15 @@ body {
 
 .settings-content {
     display: grid;
-    gap: 18px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+    gap: 24px;
 }
 
 .settings-panel {
     scroll-margin-top: 96px;
+    margin-top: 0;
+    padding: 30px;
 }
 
 .settings-kicker {
@@ -1792,7 +1830,7 @@ body {
 
 /* Keep every shared surface readable when the saved theme is dark. */
 html[data-theme="dark"] body {
-    background: var(--background);
+    background: #000000;
     color: var(--text);
 }
 
@@ -1812,12 +1850,12 @@ html[data-theme="dark"] .faq-chat-panel {
 }
 
 html[data-theme="dark"] .navbar {
-    background: rgba(17, 24, 39, 0.95);
+    background: rgba(0, 0, 0, 0.96);
 }
 
 html[data-theme="dark"] .hero,
 html[data-theme="dark"] .profile-avatar {
-    background: linear-gradient(135deg, #172554, #1e3a8a);
+    background: #101010;
 }
 
 html[data-theme="dark"] .logo,
@@ -1854,12 +1892,12 @@ html[data-theme="dark"] .feature-icon,
 html[data-theme="dark"] .chat-message,
 html[data-theme="dark"] .faq-message-bot,
 html[data-theme="dark"] .message {
-    background: #172554;
-    color: #dbeafe;
+    background: #151515;
+    color: #d4d4d4;
 }
 
 html[data-theme="dark"] .footer {
-    background: #050914;
+    background: #050505;
 }
 
 html[data-theme="dark"] .footer p,
@@ -1884,12 +1922,18 @@ html[data-theme="dark"] .faq-chat-quick-actions button {
 }
 
 html[data-theme="dark"] .faq-chat-header {
-    background: #172554;
+    background: #0b0b0b;
 }
 
 @media (max-width: 700px) {
+    .settings-page {
+        margin-top: 28px;
+        padding: 0 20px 56px;
+    }
+
     .settings-layout {
         grid-template-columns: 1fr;
+        gap: 20px;
     }
 
     .settings-nav {
@@ -1910,5 +1954,9 @@ html[data-theme="dark"] .faq-chat-header {
     .settings-nav-link:focus {
         border-bottom-color: var(--primary);
         border-left: 0;
+    }
+
+    .settings-content {
+        grid-template-columns: 1fr;
     }
 }
