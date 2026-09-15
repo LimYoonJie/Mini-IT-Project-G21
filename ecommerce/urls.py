@@ -8,4 +8,4 @@ urlpatterns = [
     path("django-admin/", admin.site.urls),
     path("favicon.ico", RedirectView.as_view(url="/static/favicon.svg", permanent=False)),
     path("", include("marketplace.urls")),
-] + static(settings.STATIC_URL, document_root=str(settings.STATICFILES_DIRS[0]))
+] + static(settings.STATIC_URL, document_root=str(settings.STATICFILES_DIRS[0])) + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

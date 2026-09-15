@@ -6,8 +6,17 @@ My Profile | MMU Second-Hand Marketplace
 
 {% block content %}
 
-<h1>My Profile</h1>
+<section class="profile-page">
+    <div class="section-heading">
+        <p class="section-label">ACCOUNT</p>
+        <h1>My Profile</h1>
+    </div>
 
-<p>Your account information will appear here.</p>
+    <div class="profile-card">
+        <p><strong>Name:</strong> {{ request.user.get_full_name|default:"Not provided" }}</p>
+        <p><strong>Email:</strong> {{ request.user.email }}</p>
+        <p><strong>Username:</strong> {{ request.user.username }}</p>
+    </div>
+</section>
 
 {% endblock %}

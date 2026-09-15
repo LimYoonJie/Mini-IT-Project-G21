@@ -117,7 +117,7 @@ def sell(request):
         price_text = request.POST.get("price", "").strip()
         condition = request.POST.get("condition", "").strip()
         description = request.POST.get("description", "").strip()
-        image = request.POST.get("image", "").strip()
+        image = request.FILES.get("image")
 
         try:
             price = Decimal(price_text)

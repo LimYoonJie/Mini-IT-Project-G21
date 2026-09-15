@@ -10,7 +10,7 @@
         <p>Share something useful with another MMU student.</p>
     </div>
 
-    <form method="POST" class="sell-form">
+    <form method="POST" enctype="multipart/form-data" class="sell-form">
         {% csrf_token %}
 
         <label for="name">Product name</label>
@@ -42,8 +42,8 @@
         <label for="description">Description</label>
         <textarea id="description" name="description" rows="5" placeholder="Add details a buyer should know"></textarea>
 
-        <label for="image">Image URL</label>
-        <input type="url" id="image" name="image" placeholder="https://example.com/item.jpg">
+        <label for="image">Product image</label>
+        <input type="file" id="image" name="image" accept="image/*">
 
         <button type="submit" class="btn btn-primary">Publish Listing</button>
     </form>

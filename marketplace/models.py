@@ -15,7 +15,7 @@ class Product(models.Model):
     category = models.CharField(max_length=100, default="(category)")
     price = models.DecimalField(max_digits=10, decimal_places=2)
     stock = models.PositiveIntegerField(default=0)
-    image = models.URLField(max_length=500, blank=True)
+    image = models.ImageField(upload_to="product_images/", blank=True, null=True)
     description = models.TextField(blank=True)
     condition = models.CharField(max_length=20, choices=CONDITION_CHOICES, default="Lightly Used")
     created_at = models.DateTimeField(auto_now_add=True)
