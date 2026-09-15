@@ -66,6 +66,16 @@
 
         {% endif %}
 
+        {% if request.user.is_authenticated and request.user == product.seller %}
+            <div class="product-owner-actions">
+                <a href="{% url 'edit_listing' product_id=product.id %}" class="btn btn-secondary">Edit Listing</a>
+                <form method="POST" action="{% url 'delete_listing' product_id=product.id %}" onsubmit="return confirm('Delete this listing?');">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Delete Listing</button>
+                </form>
+            </div>
+        {% endif %}
+
     </div>
 
         {% include "client/report_listing.html" with product=product %}

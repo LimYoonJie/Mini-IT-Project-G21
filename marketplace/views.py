@@ -159,6 +159,70 @@ def product_detail(request, product_id):
     return render(request, "client/product_detail.html", {"product": product})
 
 
+@login_required(login_url="login")
+def edit_listing(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+    if request.user != product.seller:
+        messages.error(request, "You can only edit your own listings.")
+        return redirect("product_detail", product_id=product.id)
+
+    subcategories = [subcategory for group in CATEGORY_GROUPS.values() for subcategory in group]
+
+    if request.method == "POST":
+        name = request.POST.get("name", "").strip()
+        category = request.POST.get("category", "").strip()
+        price_text = request.POST.get("price", "").strip()
+        condition = request.POST.get("condition", "").strip()
+        description = request.POST.get("description", "").strip()
+        new_image = request.FILES.get("image")
+
+        try:
+            price = Decimal(price_text)
+        except (InvalidOperation, TypeError):
+            price = Decimal("-1")
+
+        if not name or category not in subcategories:
+            messages.error(request, "Enter a product name and choose a valid category.")
+        elif price < 0:
+            messages.error(request, "Enter a valid non-negative price.")
+        elif condition not in dict(Product.CONDITION_CHOICES):
+            messages.error(request, "Choose a valid item condition.")
+        else:
+            product.name = name
+            product.category = category
+            product.price = price
+            product.condition = condition
+            product.description = description
+            if new_image:
+                product.image = new_image
+            product.save()
+            messages.success(request, "Your listing was updated successfully.")
+            return redirect("product_detail", product_id=product.id)
+
+    return render(
+        request,
+        "client/edit_listing.html",
+        {
+            "product": product,
+            "category_groups": CATEGORY_GROUPS.items(),
+            "condition_choices": Product.CONDITION_CHOICES,
+        },
+    )
+
+
+@login_required(login_url="login")
+@require_POST
+def delete_listing(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+    if request.user != product.seller:
+        messages.error(request, "You can only delete your own listings.")
+        return redirect("product_detail", product_id=product.id)
+
+    product.delete()
+    messages.success(request, "Your listing was deleted successfully.")
+    return redirect("product_list")
+
+
 @require_POST
 def report_listing(request, product_id):
     product = get_object_or_404(Product, id=product_id)
