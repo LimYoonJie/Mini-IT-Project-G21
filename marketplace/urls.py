@@ -19,6 +19,8 @@ urlpatterns = [
     path("checkout", views.checkout, name="checkout"),
     path("order-confirmation", views.order_confirmation, name="order_confirmation"),
     path("login", views.login, name="login"),
+    path("login/verify", views.verify_login, name="verify_login"),
+    path("login/resend", views.resend_login_otp, name="resend_login_otp"),
     path(
         "password-reset",
         auth_views.PasswordResetView.as_view(

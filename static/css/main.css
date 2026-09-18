@@ -1307,6 +1307,10 @@ body {
     font-weight: 700;
 }
 
+.faq-chat-toggle[hidden] {
+    display: none;
+}
+
 .faq-chat-icon {
     display: grid;
     width: 28px;

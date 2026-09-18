@@ -388,10 +388,78 @@ def login(request):
         if user is None:
             messages.error(request, "Invalid email or password.")
         else:
+            otp = _new_otp()
+            now = timezone.now()
+            request.session["pending_login"] = {
+                "user_id": user.id,
+                "email": user.email,
+                "otp_hash": make_password(otp),
+                "otp_created_at": now.isoformat(),
+                "expires_at": (now + timedelta(minutes=OTP_EXPIRY_MINUTES)).isoformat(),
+            }
+            if not _send_login_otp(user.email, otp):
+                messages.error(request, "We could not send the login OTP. Check the email server settings and try again.")
+                return render(request, "client/login.html")
+            messages.success(request, f"An OTP was sent to {user.email}.")
+            return redirect("verify_login")
+
+    return render(request, "client/login.html")
+
+
+def verify_login(request):
+    pending = request.session.get("pending_login")
+    if not pending:
+        messages.error(request, "Start logging in again to request an OTP.")
+        return redirect("login")
+
+    if request.method == "POST":
+        otp = request.POST.get("otp", "").strip()
+        expires_at = timezone.datetime.fromisoformat(pending["expires_at"])
+        if timezone.now() > expires_at:
+            messages.error(request, "This OTP has expired. Request a new one.")
+        elif not check_password(otp, pending["otp_hash"]):
+            messages.error(request, "The OTP is incorrect.")
+        else:
+            user = User.objects.filter(id=pending["user_id"], email__iexact=pending["email"]).first()
+            if user is None:
+                request.session.pop("pending_login", None)
+                messages.error(request, "That account is no longer available.")
+                return redirect("login")
+            request.session.pop("pending_login", None)
             auth_login(request, user)
             return redirect("profile")
 
-    return render(request, "client/login.html")
+    return render(request, "client/verify_login.html", {"email": pending["email"]})
+
+
+@require_POST
+def resend_login_otp(request):
+    pending = request.session.get("pending_login")
+    if not pending:
+        messages.error(request, "Start logging in again to request an OTP.")
+        return redirect("login")
+
+    created_at = timezone.datetime.fromisoformat(pending["otp_created_at"])
+    elapsed = timezone.now() - created_at
+    if elapsed < timedelta(seconds=RESEND_COOLDOWN_SECONDS):
+        remaining = RESEND_COOLDOWN_SECONDS - int(elapsed.total_seconds())
+        messages.error(request, f"Please wait {remaining} seconds before requesting another OTP.")
+        return redirect("verify_login")
+
+    otp = _new_otp()
+    now = timezone.now()
+    updated_pending = pending.copy()
+    updated_pending.update(
+        otp_hash=make_password(otp),
+        otp_created_at=now.isoformat(),
+        expires_at=(now + timedelta(minutes=OTP_EXPIRY_MINUTES)).isoformat(),
+    )
+    if not _send_login_otp(pending["email"], otp):
+        messages.error(request, "We could not send the login OTP. Check the email server settings and try again.")
+        return redirect("verify_login")
+    request.session["pending_login"] = updated_pending
+    messages.success(request, "A new OTP was sent to your email.")
+    return redirect("verify_login")
 
 
 def register(request):
@@ -505,6 +573,16 @@ def _send_otp(email, otp):
         f"Your MMU Marketplace verification code is {otp}. It expires in {OTP_EXPIRY_MINUTES} minutes.",
         None,
         [email],
+    )
+
+
+def _send_login_otp(email, otp):
+    return send_mail(
+        "MMU Marketplace login OTP",
+        f"Your MMU Marketplace login verification code is {otp}. It expires in {OTP_EXPIRY_MINUTES} minutes.",
+        None,
+        [email],
+        fail_silently=True,
     )
 
 

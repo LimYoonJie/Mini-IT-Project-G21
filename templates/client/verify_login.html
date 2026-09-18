@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Verify Login | MMU Second-Hand Marketplace{% endblock %}
+
+{% block content %}
+<h1>Verify your login</h1>
+<p class="form-note">Enter the 6-digit OTP sent to {{ email }}. It expires in 10 minutes.</p>
+
+<form method="POST" class="auth-form">
+    {% csrf_token %}
+    <label for="otp">OTP</label>
+    <input type="text" id="otp" name="otp" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" required autofocus>
+    <button type="submit" class="btn btn-primary">Verify and log in</button>
+</form>
+
+<form method="POST" action="{% url 'resend_login_otp' %}" class="resend-form">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-secondary" id="resend-button" disabled>Resend OTP (<span id="countdown">60</span>s)</button>
+</form>
+
+<script>
+    const resendButton = document.getElementById("resend-button");
+    const countdown = document.getElementById("countdown");
+    let seconds = 60;
+    const timer = setInterval(() => {
+        seconds -= 1;
+        countdown.textContent = seconds;
+        if (seconds <= 0) {
+            clearInterval(timer);
+            resendButton.disabled = false;
+            resendButton.textContent = "Resend OTP";
+        }
+    }, 1000);
+</script>
+{% endblock %}
