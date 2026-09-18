@@ -90,7 +90,49 @@ SIMPLEUI_HOME_INFO = False
 SIMPLEUI_HOME_QUICK = False
 SIMPLEUI_LOGO = '-' 
 SIMPLEUI_VIEW_SITE = True
-SIMPLEUI_INDEX = '/admin/dashboard/'
+SIMPLEUI_INDEX = '/'
 
 LOGIN_REDIRECT_URL = '/admin/'
 LOGOUT_REDIRECT_URL = '/admin/login/'
+
+SIMPLEUI_CONFIG = {
+    'system_keep': False,
+    'site_url': '/',
+    'menu_display': ['View Shop Site','User Management', 'Product Management','Report Management', 'Order Management'],
+    'home_info': [
+        {
+            'title': 'Total Register Users',
+            'icon': 'fas fa-users',
+            'value': 'total_users',
+            'color': 'bg-aquamarine'
+        },
+        {
+            'name': 'Total Product Listings',
+            'icon': 'fas fa-box-open',
+            'value': 'total_listings',
+            'color': 'bg-blue'
+        },
+    ],
+    'menus': [
+        {
+            'name': 'User Management',
+            'icon': 'fas fa-users-cog',
+            'url': 'auth/user/'
+        },
+        {
+            'name': 'Product Management',
+            'icon': 'fas fa-box-open',
+            'url': 'marketplace/product/'
+        },
+        {
+            'name': 'Report Management',
+            'icon': 'fas fa-bullhorn',
+            'url': 'marketplace/listingreport/' 
+        },
+        {
+            'name': 'Order Management',
+            'icon': 'fas fa-shopping-cart',
+            'url': 'myapp/order/'
+        }
+    ]
+}
