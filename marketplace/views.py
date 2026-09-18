@@ -254,6 +254,9 @@ def cart(request):
 
 @require_POST
 def add_to_cart(request, product_id):
+    if not request.user.is_authenticated:
+        return redirect("login")
+
     product = get_object_or_404(Product, id=product_id)
     if product.stock < 1:
         messages.error(request, f"{product.name} is out of stock.")

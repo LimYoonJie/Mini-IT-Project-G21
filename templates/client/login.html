@@ -33,10 +33,19 @@ Login | MMU Second-Hand Marketplace
         required
     >
 
+    <p class="form-note">
+        <a href="{% url 'password_reset' %}">Forgot your password?</a>
+    </p>
+
     <button type="submit" class="btn btn-primary">
         Login
     </button>
 
 </form>
+
+<p class="form-note">
+    Do not have an account?
+    <a href="{% url 'register' %}">Create one</a>.
+</p>
 
 {% endblock %}

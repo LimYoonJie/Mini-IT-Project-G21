@@ -5,5 +5,6 @@
     "list.inactiveSelectionBackground": "#3a3a3a",
     "list.inactiveSelectionForeground": "#e5e7eb",
     "gitDecoration.modifiedResourceForeground": "#f8fafc"
-  }
+  },
+  "python-envs.defaultEnvManager": "ms-python.python:system"
 }

@@ -1,0 +1,10 @@
+# Local secrets
+.env
+
+# Python generated files
+__pycache__/
+*.py[cod]
+
+# Local databases and uploaded media
+*.sqlite3
+media/

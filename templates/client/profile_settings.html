@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Account Settings | MMU Second-Hand Marketplace{% endblock %}
+
+{% block content %}
+<section class="settings-page">
+    <h1>Account Settings</h1>
+
+    <div class="settings-grid">
+        <div class="frame-panel settings-card">
+            <h2>Change email</h2>
+            <form method="POST" class="settings-form">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="change_email">
+                <label for="email">New student email</label>
+                <input type="email" id="email" name="email" value="{{ request.user.email }}" required>
+                <button type="submit" class="btn btn-primary">Send OTP</button>
+            </form>
+
+            {% if pending_change %}
+                <form method="POST" class="settings-form" style="margin-top: 20px;">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="confirm_email">
+                    <label for="otp">Verification code</label>
+                    <input type="text" id="otp" name="otp" maxlength="6" required>
+                    <button type="submit" class="btn btn-primary">Confirm email change</button>
+                </form>
+            {% endif %}
+            <p class="settings-inline-note">Use your MMU student email ending in @student.mmu.edu.my.</p>
+        </div>
+
+        <div class="frame-panel settings-card">
+            <h2>Change password</h2>
+            <form method="POST" class="settings-form">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="change_password">
+
+                <label for="current_password">Current password</label>
+                <input type="password" id="current_password" name="current_password" required>
+
+                <label for="new_password">New password</label>
+                <input type="password" id="new_password" name="new_password" required>
+
+                <label for="confirm_password">Confirm password</label>
+                <input type="password" id="confirm_password" name="confirm_password" required>
+
+                <button type="submit" class="btn btn-primary">Update password</button>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock %}
