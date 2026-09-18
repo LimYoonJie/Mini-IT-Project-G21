@@ -1,20 +1,21 @@
 {% extends "base.html" %}
 
-{% block title %}Sell an Item | MMU Second-Hand Marketplace{% endblock %}
+{% block title %}
+Edit Listing | MMU Second-Hand Marketplace
+{% endblock %}
 
 {% block content %}
 <section class="sell-page">
     <div class="section-heading">
-        <p class="section-label">LIST AN ITEM</p>
-        <h1>Sell on MMU Marketplace</h1>
-        <p>Share something useful with another MMU student.</p>
+        <p class="section-label">EDIT LISTING</p>
+        <h1>Edit your item</h1>
     </div>
 
     <form method="POST" enctype="multipart/form-data" class="sell-form">
         {% csrf_token %}
 
         <label for="name">Product name</label>
-        <input type="text" id="name" name="name" maxlength="200" required>
+        <input type="text" id="name" name="name" maxlength="200" value="{{ product.name }}" required>
 
         <label for="category">Category</label>
         <select id="category" name="category" required>
@@ -22,30 +23,30 @@
             {% for group, subcategories in category_groups %}
                 <optgroup label="{{ group }}">
                     {% for subcategory in subcategories %}
-                    <option value="{{ subcategory }}">{{ subcategory }}</option>
+                    <option value="{{ subcategory }}" {% if subcategory == product.category %}selected{% endif %}>{{ subcategory }}</option>
                     {% endfor %}
                 </optgroup>
             {% endfor %}
         </select>
 
         <label for="price">Price (RM)</label>
-        <input type="number" id="price" name="price" min="0" step="0.01" required>
+        <input type="number" id="price" name="price" min="0" step="0.01" value="{{ product.price }}" required>
 
         <label for="condition">Item condition</label>
         <select id="condition" name="condition" required>
             <option value="">Choose condition</option>
             {% for value, label in condition_choices %}
-            <option value="{{ value }}">{{ label }}</option>
+            <option value="{{ value }}" {% if value == product.condition %}selected{% endif %}>{{ label }}</option>
             {% endfor %}
         </select>
 
         <label for="description">Description</label>
-        <textarea id="description" name="description" rows="5" placeholder="Add details a buyer should know"></textarea>
+        <textarea id="description" name="description" rows="5">{{ product.description }}</textarea>
 
-        <label for="image">Product image</label>
+        <label for="image">Replace product image</label>
         <input type="file" id="image" name="image" accept="image/*">
 
-        <button type="submit" class="btn btn-primary">Publish Listing</button>
+        <button type="submit" class="btn btn-primary">Save Changes</button>
     </form>
 </section>
 {% endblock %}

@@ -18,9 +18,16 @@
         {% endblock %}
     </title>
 
+    <script>
+        (function () {
+            const theme = localStorage.getItem("mmuTheme");
+            document.documentElement.dataset.theme = theme === "dark" ? "dark" : "light";
+        }());
+    </script>
+
     <link
         rel="stylesheet"
-        href="{% static 'css/main.css' %}"
+        href="{% static 'css/main.css' %}?v=6"
     >
 
     <link
@@ -69,9 +76,16 @@
                 <span>Cart</span>
             </a>
 
-            <button type="button" class="account-button" id="account-button" aria-haspopup="dialog" aria-controls="account-modal" onclick="document.getElementById('account-modal').removeAttribute('hidden')">
-                Account
-            </button>
+            {% if request.user.is_authenticated %}
+                <div class="profile-summary">
+                    <span class="profile-name">{{ request.user.get_full_name|default:request.user.email }}</span>
+                    <a href="{% url 'profile' %}" class="btn btn-secondary profile-button">My Profile</a>
+                </div>
+            {% else %}
+                <button type="button" class="account-button" id="account-button" aria-haspopup="dialog" aria-controls="account-modal" onclick="document.getElementById('account-modal').removeAttribute('hidden')">
+                    Account
+                </button>
+            {% endif %}
 
         </div>
 

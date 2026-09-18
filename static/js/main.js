@@ -1,20 +1,47 @@
+const themeToggle = document.querySelector("[data-theme-toggle]");
+const documentRoot = document.documentElement;
+
+const setTheme = (theme) => {
+	documentRoot.dataset.theme = theme;
+	localStorage.setItem("mmuTheme", theme);
+};
+
+if (themeToggle) {
+	themeToggle.checked = documentRoot.dataset.theme === "dark";
+	themeToggle.addEventListener("change", () => {
+		setTheme(themeToggle.checked ? "dark" : "light");
+	});
+}
+
 const accountButton = document.getElementById("account-button");
 const accountModal = document.getElementById("account-modal");
 
 if (accountButton && accountModal) {
+	const isAccountDropdown = accountButton.getAttribute("aria-haspopup") === "menu";
 	const closeAccountModal = () => {
 		accountModal.hidden = true;
+		accountButton.setAttribute("aria-expanded", "false");
 		accountButton.focus();
 	};
 
 	accountButton.addEventListener("click", () => {
-		accountModal.removeAttribute("hidden");
-		accountModal.querySelector("a").focus();
+		const isOpening = accountModal.hidden;
+		accountModal.hidden = !isOpening;
+		accountButton.setAttribute("aria-expanded", String(isOpening));
+		if (isOpening) accountModal.querySelector("a").focus();
 	});
 
 	accountModal.querySelectorAll("[data-close-account-modal]").forEach((element) => {
 		element.addEventListener("click", closeAccountModal);
 	});
+
+	if (isAccountDropdown) {
+		document.addEventListener("click", (event) => {
+			if (!accountModal.hidden && !accountButton.closest(".account-dropdown").contains(event.target)) {
+				closeAccountModal();
+			}
+		});
+	}
 
 	document.addEventListener("keydown", (event) => {
 		if (event.key === "Escape" && !accountModal.hidden) {
@@ -90,6 +117,7 @@ const faqAnswers = [
 const setFaqChatOpen = (isOpen) => {
 	if (!faqChat || !faqToggle || !faqPanel) return;
 	faqPanel.hidden = !isOpen;
+	faqToggle.hidden = isOpen;
 	faqToggle.setAttribute("aria-expanded", String(isOpen));
 	faqChat.classList.toggle("is-open", isOpen);
 	if (isOpen && faqInput) faqInput.focus();

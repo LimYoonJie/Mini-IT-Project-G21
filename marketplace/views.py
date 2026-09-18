@@ -3,7 +3,7 @@ from datetime import timedelta
 from decimal import Decimal, InvalidOperation
 
 from django.contrib import messages
-from django.contrib.auth import authenticate, get_user_model, login as auth_login
+from django.contrib.auth import authenticate, get_user_model, login as auth_login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.hashers import check_password, make_password
 from django.core.mail import send_mail
@@ -117,7 +117,7 @@ def sell(request):
         price_text = request.POST.get("price", "").strip()
         condition = request.POST.get("condition", "").strip()
         description = request.POST.get("description", "").strip()
-        image = request.POST.get("image", "").strip()
+        image = request.FILES.get("image")
 
         try:
             price = Decimal(price_text)
@@ -159,6 +159,70 @@ def product_detail(request, product_id):
     return render(request, "client/product_detail.html", {"product": product})
 
 
+@login_required(login_url="login")
+def edit_listing(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+    if request.user != product.seller:
+        messages.error(request, "You can only edit your own listings.")
+        return redirect("product_detail", product_id=product.id)
+
+    subcategories = [subcategory for group in CATEGORY_GROUPS.values() for subcategory in group]
+
+    if request.method == "POST":
+        name = request.POST.get("name", "").strip()
+        category = request.POST.get("category", "").strip()
+        price_text = request.POST.get("price", "").strip()
+        condition = request.POST.get("condition", "").strip()
+        description = request.POST.get("description", "").strip()
+        new_image = request.FILES.get("image")
+
+        try:
+            price = Decimal(price_text)
+        except (InvalidOperation, TypeError):
+            price = Decimal("-1")
+
+        if not name or category not in subcategories:
+            messages.error(request, "Enter a product name and choose a valid category.")
+        elif price < 0:
+            messages.error(request, "Enter a valid non-negative price.")
+        elif condition not in dict(Product.CONDITION_CHOICES):
+            messages.error(request, "Choose a valid item condition.")
+        else:
+            product.name = name
+            product.category = category
+            product.price = price
+            product.condition = condition
+            product.description = description
+            if new_image:
+                product.image = new_image
+            product.save()
+            messages.success(request, "Your listing was updated successfully.")
+            return redirect("product_detail", product_id=product.id)
+
+    return render(
+        request,
+        "client/edit_listing.html",
+        {
+            "product": product,
+            "category_groups": CATEGORY_GROUPS.items(),
+            "condition_choices": Product.CONDITION_CHOICES,
+        },
+    )
+
+
+@login_required(login_url="login")
+@require_POST
+def delete_listing(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+    if request.user != product.seller:
+        messages.error(request, "You can only delete your own listings.")
+        return redirect("product_detail", product_id=product.id)
+
+    product.delete()
+    messages.success(request, "Your listing was deleted successfully.")
+    return redirect("product_list")
+
+
 @require_POST
 def report_listing(request, product_id):
     product = get_object_or_404(Product, id=product_id)
@@ -190,6 +254,9 @@ def cart(request):
 
 @require_POST
 def add_to_cart(request, product_id):
+    if not request.user.is_authenticated:
+        return redirect("login")
+
     product = get_object_or_404(Product, id=product_id)
     if product.stock < 1:
         messages.error(request, f"{product.name} is out of stock.")
@@ -441,8 +508,140 @@ def _send_otp(email, otp):
     )
 
 
+@login_required(login_url="login")
+def logout_view(request):
+    logout(request)
+    messages.success(request, "You have been logged out.")
+    return redirect("home")
+
+
+@login_required(login_url="login")
+def account_settings(request):
+    if request.method == "POST":
+        action = request.POST.get("action", "")
+        if action == "email":
+            new_email = request.POST.get("new_email", "").strip().lower()
+            confirm_email = request.POST.get("confirm_email", "").strip().lower()
+            if not new_email or not confirm_email:
+                messages.error(request, "Please enter both email fields.")
+            elif new_email != confirm_email:
+                messages.error(request, "The new email addresses do not match.")
+            elif new_email == request.user.email.lower():
+                messages.error(request, "This is already your current email address.")
+            elif not new_email.endswith(MMU_EMAIL_DOMAIN):
+                messages.error(request, "Only MMU student emails can be used.")
+            elif User.objects.filter(email__iexact=new_email).exclude(pk=request.user.pk).exists():
+                messages.error(request, "This email is already in use.")
+            else:
+                otp = _new_otp()
+                request.session["pending_account_change"] = {
+                    "type": "email",
+                    "new_email": new_email,
+                    "otp_hash": make_password(otp),
+                    "expires_at": (timezone.now() + timedelta(minutes=OTP_EXPIRY_MINUTES)).isoformat(),
+                    "sent_to": new_email,
+                }
+                send_mail(
+                    "MMU Marketplace account email change OTP",
+                    f"Your verification code is {otp}. It expires in {OTP_EXPIRY_MINUTES} minutes.",
+                    None,
+                    [new_email],
+                )
+                messages.success(request, f"A verification code was sent to {new_email}.")
+                return redirect("verify_account_change")
+
+        elif action == "password":
+            current_password = request.POST.get("current_password", "")
+            new_password = request.POST.get("new_password", "")
+            confirm_password = request.POST.get("confirm_password", "")
+            if not request.user.check_password(current_password):
+                messages.error(request, "Your current password is incorrect.")
+            elif not new_password or len(new_password) < 8:
+                messages.error(request, "New password must be at least 8 characters long.")
+            elif new_password != confirm_password:
+                messages.error(request, "New passwords do not match.")
+            else:
+                otp = _new_otp()
+                request.session["pending_account_change"] = {
+                    "type": "password",
+                    "new_password": make_password(new_password),
+                    "otp_hash": make_password(otp),
+                    "expires_at": (timezone.now() + timedelta(minutes=OTP_EXPIRY_MINUTES)).isoformat(),
+                    "sent_to": request.user.email,
+                }
+                send_mail(
+                    "MMU Marketplace account password change OTP",
+                    f"Your verification code is {otp}. It expires in {OTP_EXPIRY_MINUTES} minutes.",
+                    None,
+                    [request.user.email],
+                )
+                messages.success(request, f"A verification code was sent to {request.user.email}.")
+                return redirect("verify_account_change")
+
+    return render(request, "client/account_settings.html")
+
+
+@login_required(login_url="login")
+def verify_account_change(request):
+    pending = request.session.get("pending_account_change")
+    if not pending:
+        messages.error(request, "No account change is pending.")
+        return redirect("account_settings")
+
+    if request.method == "POST":
+        otp = request.POST.get("otp", "").strip()
+        expires_at = timezone.datetime.fromisoformat(pending["expires_at"]) if isinstance(pending.get("expires_at"), str) else pending.get("expires_at")
+        if timezone.now() > expires_at:
+            messages.error(request, "This verification code has expired. Please request a new one.")
+            request.session.pop("pending_account_change", None)
+            return redirect("account_settings")
+        if not check_password(otp, pending["otp_hash"]):
+            messages.error(request, "The verification code is incorrect.")
+            return redirect("verify_account_change")
+
+        user = request.user
+        if pending["type"] == "email":
+            user.email = pending["new_email"]
+            user.username = pending["new_email"]
+            user.save(update_fields=["email", "username"])
+            messages.success(request, "Your email address was updated successfully.")
+        elif pending["type"] == "password":
+            user.password = pending["new_password"]
+            user.save(update_fields=["password"])
+            messages.success(request, "Your password was updated successfully.")
+
+        request.session.pop("pending_account_change", None)
+        return redirect("profile")
+
+    return render(request, "client/verify_account_change.html", {"email": pending.get("sent_to", request.user.email)})
+
+
+@login_required(login_url="login")
 def profile(request):
-    return render(request, "client/profile.html")
+    profile_obj, _ = MarketplaceProfile.objects.get_or_create(user=request.user)
+
+    if request.method == "POST" and request.FILES.get("profile_picture"):
+        profile_obj.profile_picture = request.FILES["profile_picture"]
+        profile_obj.save(update_fields=["profile_picture"])
+        messages.success(request, "Your profile picture has been updated.")
+        return redirect("profile")
+
+    selling_products = Product.objects.filter(seller=request.user).order_by("-created_at")
+    purchased_ids = request.session.get("purchased_products", [])
+    buying_products = list(Product.objects.filter(id__in=purchased_ids).order_by("-created_at")) if purchased_ids else []
+
+    initials = "".join(part[0].upper() for part in request.user.get_full_name().split()[:2]) if request.user.get_full_name() else request.user.email[0].upper()
+
+    return render(
+        request,
+        "client/profile.html",
+        {
+            "profile_obj": profile_obj,
+            "selling_products": selling_products,
+            "buying_products": buying_products,
+            "profile_initials": initials,
+        },
+    )
 
 
 # =========================

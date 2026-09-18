@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}
+Account Settings | MMU Second-Hand Marketplace
+{% endblock %}
+
+{% block content %}
+<section class="auth-form settings-page">
+    <div class="section-heading">
+        <p class="section-label">ACCOUNT SETTINGS</p>
+        <h1>Manage your account</h1>
+        <p>Keep your profile, login security, and marketplace preferences up to date.</p>
+    </div>
+
+    <div class="settings-layout">
+        <nav class="settings-nav" aria-label="Settings sections">
+            <a href="#account" class="settings-nav-link">Account</a>
+            <a href="#security" class="settings-nav-link">Security</a>
+            <a href="#appearance" class="settings-nav-link">Appearance</a>
+            <a href="#help" class="settings-nav-link">Help</a>
+        </nav>
+
+        <div class="settings-content">
+            <section class="settings-panel" id="account">
+                <p class="settings-kicker">ACCOUNT</p>
+                <h2>Email address</h2>
+                <p class="settings-description">Change the email used for your MMU Marketplace account. An OTP will be sent before the change is saved.</p>
+                <form method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="email">
+                    <label for="new_email">New email</label>
+                    <input type="email" id="new_email" name="new_email" required>
+                    <label for="confirm_email">Confirm new email</label>
+                    <input type="email" id="confirm_email" name="confirm_email" required>
+                    <button type="submit" class="btn btn-primary">Send Email OTP</button>
+                </form>
+            </section>
+
+            <section class="settings-panel" id="security">
+                <p class="settings-kicker">SECURITY</p>
+                <h2>Password and verification</h2>
+                <p class="settings-description">Password changes require your current password and a one-time code sent to your registered email.</p>
+                <form method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="password">
+                    <label for="current_password">Current password</label>
+                    <input type="password" id="current_password" name="current_password" required>
+                    <label for="new_password">New password</label>
+                    <input type="password" id="new_password" name="new_password" required>
+                    <label for="confirm_password">Confirm new password</label>
+                    <input type="password" id="confirm_password" name="confirm_password" required>
+                    <button type="submit" class="btn btn-primary">Send Password OTP</button>
+                </form>
+            </section>
+
+            <section class="settings-panel" id="appearance">
+                <p class="settings-kicker">APPEARANCE</p>
+                <h2>Theme</h2>
+                <p class="settings-description">Choose how the marketplace looks on this device. Your preference applies across every page.</p>
+                <label class="theme-toggle" for="dark-mode-toggle">
+                    <span class="theme-toggle-copy">
+                        <strong>Dark mode</strong>
+                        <small>Use a darker palette that is easier on the eyes.</small>
+                    </span>
+                    <input type="checkbox" id="dark-mode-toggle" data-theme-toggle>
+                    <span class="theme-toggle-track" aria-hidden="true"><span></span></span>
+                </label>
+            </section>
+
+            <section class="settings-panel" id="help">
+                <p class="settings-kicker">HELP</p>
+                <h2>Need assistance?</h2>
+                <p class="settings-description">Visit the contact page or open the marketplace help chat for account and listing support.</p>
+                <a href="{% url 'contact' %}" class="btn btn-secondary">Contact support</a>
+            </section>
+        </div>
+    </div>
+</section>
+{% endblock %}
