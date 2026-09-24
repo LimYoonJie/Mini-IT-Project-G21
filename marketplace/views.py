@@ -12,7 +12,17 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
-from .models import ChatMessage, ListingReport, MarketplaceProfile, PendingRegistration, Product
+from .models import (
+    ChatMessage,
+    ListingReport,
+    MarketplaceProfile,
+    PendingRegistration,
+    Product,
+    ProductReview,
+    Purchase,
+    ReviewAttachment,
+    ReviewHelpfulVote,
+)
 
 User = get_user_model()
 MMU_EMAIL_DOMAIN = "@student.mmu.edu.my"
@@ -156,7 +166,55 @@ def sell(request):
 
 def product_detail(request, product_id):
     product = get_object_or_404(Product, id=product_id)
-    return render(request, "client/product_detail.html", {"product": product})
+    user_review = None
+    can_review = False
+    if request.user.is_authenticated:
+        user_review = ProductReview.objects.filter(product=product, reviewer=request.user).first()
+        can_review = Purchase.objects.filter(product=product, buyer=request.user, status="completed").exists() and not user_review
+    reviews = product.reviews.select_related("reviewer").prefetch_related("attachments", "helpful_votes")
+    return render(
+        request,
+        "client/product_detail.html",
+        {"product": product, "reviews": reviews, "user_review": user_review, "can_review": can_review},
+    )
+
+
+@login_required(login_url="login")
+@require_POST
+def submit_review(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+    if not Purchase.objects.filter(product=product, buyer=request.user, status="completed").exists():
+        messages.error(request, "Only customers who bought this product can leave a review.")
+        return redirect("product_detail", product_id=product.id)
+    if ProductReview.objects.filter(product=product, reviewer=request.user).exists():
+        messages.error(request, "You have already reviewed this product.")
+        return redirect("product_detail", product_id=product.id)
+
+    try:
+        rating = int(request.POST.get("rating", "0"))
+    except (TypeError, ValueError):
+        rating = 0
+    comment = request.POST.get("comment", "").strip()
+    if rating not in range(1, 6) or not comment:
+        messages.error(request, "Choose a rating from 1 to 5 stars and write a comment.")
+        return redirect("product_detail", product_id=product.id)
+
+    review = ProductReview.objects.create(product=product, reviewer=request.user, rating=rating, comment=comment)
+    for attachment in request.FILES.getlist("attachments"):
+        ReviewAttachment.objects.create(review=review, file=attachment)
+    messages.success(request, "Your review was posted.")
+    return redirect("product_detail", product_id=product.id)
+
+
+@login_required(login_url="login")
+@require_POST
+def helpful_review(request, review_id):
+    review = get_object_or_404(ProductReview, id=review_id)
+    if review.reviewer_id == request.user.id:
+        messages.error(request, "You cannot mark your own review as helpful.")
+    else:
+        ReviewHelpfulVote.objects.get_or_create(review=review, voter=request.user)
+    return redirect("product_detail", product_id=review.product_id)
 
 
 @login_required(login_url="login")
@@ -346,10 +404,21 @@ def product_chat(request, product_id):
     )
 
 
+@login_required(login_url="login")
 def checkout(request):
-    return render(request, "client/checkout.html")
+    cart_items = _cart_items(request)
+    if request.method == "POST":
+        for item in cart_items:
+            Purchase.objects.create(buyer=request.user, product=item["product"], price=item["subtotal"])
+            item["product"].stock = max(item["product"].stock - item["quantity"], 0)
+            item["product"].save(update_fields=["stock"])
+        request.session["cart"] = {}
+        request.session.modified = True
+        return redirect("order_confirmation")
+    return render(request, "client/checkout.html", {"cart_items": cart_items, "total": sum(item["subtotal"] for item in cart_items)})
 
 
+@login_required(login_url="login")
 def order_confirmation(request):
     return render(request, "client/order_confirmation.html")
 

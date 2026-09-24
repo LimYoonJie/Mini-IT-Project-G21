@@ -101,3 +101,51 @@ class ListingReport(models.Model):
 
     def __str__(self):
         return f"Report for {self.product} ({self.get_reason_display()})"
+
+
+class Purchase(models.Model):
+    STATUS_CHOICES = [
+        ("completed", "Completed"),
+        ("cancelled", "Cancelled"),
+    ]
+
+    buyer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="marketplace_purchases")
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="purchases")
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="completed")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Purchase #{self.id} - {self.product.name}"
+
+
+class ProductReview(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="reviews")
+    reviewer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="product_reviews")
+    rating = models.PositiveSmallIntegerField(choices=[(value, value) for value in range(1, 6)])
+    comment = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        constraints = [
+            models.UniqueConstraint(fields=["product", "reviewer"], name="one_review_per_product_reviewer"),
+        ]
+
+    def __str__(self):
+        return f"{self.product.name} review by {self.reviewer}"
+
+
+class ReviewAttachment(models.Model):
+    review = models.ForeignKey(ProductReview, on_delete=models.CASCADE, related_name="attachments")
+    file = models.FileField(upload_to="review_attachments/")
+
+
+class ReviewHelpfulVote(models.Model):
+    review = models.ForeignKey(ProductReview, on_delete=models.CASCADE, related_name="helpful_votes")
+    voter = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="review_helpful_votes")
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["review", "voter"], name="one_helpful_vote_per_review_voter"),
+        ]

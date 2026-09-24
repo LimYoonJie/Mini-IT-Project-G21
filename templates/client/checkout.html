@@ -8,6 +8,19 @@ Checkout | MMU Second-Hand Marketplace
 
 <h1>Checkout</h1>
 
-<p>Checkout information will appear here.</p>
+{% if cart_items %}
+	<div class="checkout-items">
+		{% for item in cart_items %}
+			<p>{{ item.product.name }} &mdash; RM {{ item.subtotal|floatformat:2 }}</p>
+		{% endfor %}
+		<p><strong>Total: RM {{ total|floatformat:2 }}</strong></p>
+	</div>
+	<form method="POST">
+		{% csrf_token %}
+		<button type="submit" class="btn btn-primary">Complete purchase</button>
+	</form>
+{% else %}
+	<p>Your cart is empty.</p>
+{% endif %}
 
 {% endblock %}
