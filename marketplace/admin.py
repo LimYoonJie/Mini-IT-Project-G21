@@ -2,6 +2,12 @@ from django.contrib import admin
 from .models import ListingReport, Product, ProductReview, Purchase, ReviewAttachment, ReviewHelpfulVote
 
 
+try:
+    admin.site.unregister(Product)
+except admin.sites.NotRegistered:
+    pass
+
+
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
     list_display = ("id", "name", "category", "price", "stock")

@@ -19,6 +19,12 @@ admin.site.__class__ = MyAdminSite
 
 
 # Admin product management
+try:
+    admin.site.unregister(Product)
+except admin.sites.NotRegistered:
+    pass
+
+
 @admin.register(Product)
 class ProductManagementAdmin(admin.ModelAdmin):
     list_display = ('id', 'name', 'category', 'price', 'stock')
