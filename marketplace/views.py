@@ -1,4 +1,5 @@
 import secrets
+from smtplib import SMTPException
 from datetime import timedelta
 from decimal import Decimal, InvalidOperation
 
@@ -6,7 +7,8 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, get_user_model, login as auth_login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.hashers import check_password, make_password
-from django.core.mail import send_mail
+from django.conf import settings
+from django.core.mail import BadHeaderError, EmailMessage, send_mail
 from django.db.models import Case, IntegerField, Q, Value, When
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
@@ -116,6 +118,10 @@ def product_list(request):
 
 def categories(request):
     return render(request, "client/categories.html", {"category_groups": CATEGORY_GROUPS.items()})
+
+
+def faq(request):
+    return render(request, "client/faq.html")
 
 
 @login_required(login_url="login")
@@ -299,9 +305,58 @@ def report_listing(request, product_id):
             reason=reason,
             details=details,
         )
-        messages.success(request, "Thanks. Your report has been sent to the marketplace team.")
+        reason_label = valid_reasons[reason]
+        report_body = (
+            f"Listing: {product.name} (ID: {product.id})\n"
+            f"Listing URL: {request.build_absolute_uri(f'/product/{product.id}')}\n"
+            f"Reporter: {request.user.email if request.user.is_authenticated else 'Anonymous visitor'}\n"
+            f"Reason: {reason_label}\n"
+            f"Details: {details or 'No additional details provided.'}"
+        )
+        if _send_marketplace_report_email("Listing report: {0}".format(product.name), report_body):
+            messages.success(request, "Thanks. Your report has been sent to the marketplace team.")
+        else:
+            messages.error(request, "Your report was saved, but the marketplace email could not be sent.")
 
     return redirect("product_detail", product_id=product.id)
+
+
+@login_required(login_url="login")
+@require_POST
+def report_chat_user(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+    target_user = product.seller
+    target_label = target_user.get_full_name() or target_user.email if target_user else "User in this chat"
+    reason = request.POST.get("reason", "").strip()
+    details = request.POST.get("details", "").strip()
+    valid_reasons = {
+        "offensive": "Offensive or harassing behavior",
+        "suspicious": "Suspicious or scam behavior",
+        "impersonation": "Impersonation",
+        "spam": "Spam or unwanted messages",
+        "other": "Other",
+    }
+
+    if reason not in valid_reasons:
+        messages.error(request, "Choose a reason before submitting your report.")
+    elif reason == "other" and not details:
+        messages.error(request, "Please describe the issue when choosing Other.")
+    else:
+        report_body = (
+            f"Reported user: {target_label}\n"
+            f"Reported user email: {target_user.email if target_user else 'No account linked to this legacy listing'}\n"
+            f"Listing: {product.name} (ID: {product.id})\n"
+            f"Chat URL: {request.build_absolute_uri(f'/product/{product.id}/chat')}\n"
+            f"Reporter: {request.user.email}\n"
+            f"Reason: {valid_reasons[reason]}\n"
+            f"Details: {details or 'No additional details provided.'}"
+        )
+        if _send_marketplace_report_email("User report: {0}".format(target_user.email), report_body):
+            messages.success(request, "Thanks. Your report has been sent to the marketplace team.")
+        else:
+            messages.error(request, "The report could not be sent. Please try again later.")
+
+    return redirect("product_chat", product_id=product.id)
 
 
 def cart(request):
@@ -433,15 +488,23 @@ def contact(request):
         if not name or not email or not subject or not message:
             messages.error(request, "Please complete all fields before sending your message.")
         else:
-            send_mail(
-                subject=f"MMU Marketplace: {subject}",
-                message=f"From: {name} <{email}>\n\n{message}",
-                from_email=None,
-                recipient_list=["support@mmu-marketplace.local"],
-                fail_silently=True,
-            )
-            messages.success(request, "Thanks. Your message has been sent to the marketplace support team.")
-            return redirect("contact")
+            try:
+                support_email = EmailMessage(
+                    subject=f"MMU Marketplace: {subject}",
+                    body=f"From: {name} <{email}>\n\n{message}",
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    to=[settings.MARKETPLACE_SUPPORT_EMAIL],
+                    headers={"Reply-To": email},
+                )
+                support_email.send(fail_silently=False)
+            except (BadHeaderError, OSError, SMTPException):
+                messages.error(
+                    request,
+                    "We could not send your message right now. Please try again later.",
+                )
+            else:
+                messages.success(request, "Thanks. Your message has been sent to the marketplace support team.")
+                return redirect("contact")
 
     return render(request, "client/contact.html")
 
@@ -640,7 +703,7 @@ def _send_otp(email, otp):
     send_mail(
         "MMU Marketplace registration OTP",
         f"Your MMU Marketplace verification code is {otp}. It expires in {OTP_EXPIRY_MINUTES} minutes.",
-        None,
+        settings.DEFAULT_FROM_EMAIL,
         [email],
     )
 
@@ -649,10 +712,23 @@ def _send_login_otp(email, otp):
     return send_mail(
         "MMU Marketplace login OTP",
         f"Your MMU Marketplace login verification code is {otp}. It expires in {OTP_EXPIRY_MINUTES} minutes.",
-        None,
+        settings.DEFAULT_FROM_EMAIL,
         [email],
         fail_silently=True,
     )
+
+
+def _send_marketplace_report_email(subject, body):
+    try:
+        return send_mail(
+            subject,
+            body,
+            settings.DEFAULT_FROM_EMAIL,
+            [settings.MARKETPLACE_SUPPORT_EMAIL],
+            fail_silently=False,
+        ) == 1
+    except (BadHeaderError, OSError, SMTPException):
+        return False
 
 
 @login_required(login_url="login")
@@ -691,7 +767,7 @@ def account_settings(request):
                 send_mail(
                     "MMU Marketplace account email change OTP",
                     f"Your verification code is {otp}. It expires in {OTP_EXPIRY_MINUTES} minutes.",
-                    None,
+                    settings.DEFAULT_FROM_EMAIL,
                     [new_email],
                 )
                 messages.success(request, f"A verification code was sent to {new_email}.")

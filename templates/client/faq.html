@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block title %}
+Frequently Asked Questions | MMU Second-Hand Marketplace
+{% endblock %}
+
+{% block content %}
+<section class="faq-page">
+    <div class="faq-page-intro">
+        <p class="section-label">HELP CENTRE</p>
+        <h1>Frequently asked questions</h1>
+        <p>Find quick answers about accounts, buying, selling, payments, handover, and keeping the marketplace safe.</p>
+    </div>
+
+    <nav class="faq-topic-nav" aria-label="FAQ topics">
+        <a class="faq-topic-card" href="#accounts">
+            <span class="faq-topic-number">01</span>
+            <strong>Accounts and verification</strong>
+            <span>Registration, login, and student email help</span>
+            <span class="faq-topic-arrow" aria-hidden="true">&#8594;</span>
+        </a>
+        <a class="faq-topic-card" href="#buying">
+            <span class="faq-topic-number">02</span>
+            <strong>Buying</strong>
+            <span>Search, cart, checkout, and orders</span>
+            <span class="faq-topic-arrow" aria-hidden="true">&#8594;</span>
+        </a>
+        <a class="faq-topic-card" href="#selling">
+            <span class="faq-topic-number">03</span>
+            <strong>Selling</strong>
+            <span>Listings, editing, and item descriptions</span>
+            <span class="faq-topic-arrow" aria-hidden="true">&#8594;</span>
+        </a>
+        <a class="faq-topic-card" href="#payments">
+            <span class="faq-topic-number">04</span>
+            <strong>Payments and handover</strong>
+            <span>Payment, pickup, and delivery guidance</span>
+            <span class="faq-topic-arrow" aria-hidden="true">&#8594;</span>
+        </a>
+        <a class="faq-topic-card" href="#safety">
+            <span class="faq-topic-number">05</span>
+            <strong>Safety and support</strong>
+            <span>Reports, scams, and contacting the team</span>
+            <span class="faq-topic-arrow" aria-hidden="true">&#8594;</span>
+        </a>
+    </nav>
+
+    <div class="faq-groups">
+        <section class="faq-group" id="accounts">
+            <h2>Accounts and verification</h2>
+            <details class="faq-item">
+                <summary>How do I create an account?</summary>
+                <p>Select Account, choose Register, enter your details and MMU student email, then verify the one-time password sent to your inbox.</p>
+            </details>
+            <details class="faq-item">
+                <summary>Why do I need an MMU student email?</summary>
+                <p>Student email verification helps keep the marketplace within the MMU community and makes transactions more trustworthy.</p>
+            </details>
+            <details class="faq-item">
+                <summary>What should I do if my verification code expires?</summary>
+                <p>Use the resend option on the verification page to request a new code, then enter it before it expires.</p>
+            </details>
+            <details class="faq-item">
+                <summary>How do I reset my password?</summary>
+                <p>Open Account, choose Login, and select the password reset link. Follow the instructions sent to your registered email.</p>
+            </details>
+        </section>
+
+        <section class="faq-group" id="buying">
+            <h2>Buying</h2>
+            <details class="faq-item">
+                <summary>How do I buy an item?</summary>
+                <p>Browse Products, open a listing, add it to your cart, and complete checkout. Contact the seller to agree on the handover details.</p>
+            </details>
+            <details class="faq-item">
+                <summary>Can I buy more than one item?</summary>
+                <p>Yes. Add each available item to your cart and review the cart before continuing to checkout.</p>
+            </details>
+            <details class="faq-item">
+                <summary>How do I search for an item?</summary>
+                <p>Open Products and search by name, category, or description. You can also filter by category and condition.</p>
+            </details>
+            <details class="faq-item">
+                <summary>What happens after checkout?</summary>
+                <p>Your order is recorded and you should coordinate a safe pickup or delivery arrangement with the seller.</p>
+            </details>
+        </section>
+
+        <section class="faq-group" id="selling">
+            <h2>Selling</h2>
+            <details class="faq-item">
+                <summary>How do I create a listing?</summary>
+                <p>Choose Sell, sign in, provide the item name, category, price, condition, description, and image, then submit the listing.</p>
+            </details>
+            <details class="faq-item">
+                <summary>Can I edit my listing?</summary>
+                <p>Open your profile, select the listing, choose Edit, update the details, and save your changes.</p>
+            </details>
+            <details class="faq-item">
+                <summary>How do I remove my listing?</summary>
+                <p>Open your listing from your profile and choose Delete. Deleted listings are no longer available to buyers.</p>
+            </details>
+            <details class="faq-item">
+                <summary>What makes a good listing?</summary>
+                <p>Use clear photos, an accurate condition, a fair price, and a detailed description that mentions any defects.</p>
+            </details>
+        </section>
+
+        <section class="faq-group" id="payments">
+            <h2>Payments and handover</h2>
+            <details class="faq-item">
+                <summary>How does payment work?</summary>
+                <p>Add the item to your cart, continue to checkout, and review your order before confirming. Contact support if you have a payment issue.</p>
+            </details>
+            <details class="faq-item">
+                <summary>Does the marketplace provide delivery?</summary>
+                <p>Buyers and sellers should agree directly on a suitable MMU pickup point or delivery arrangement after purchase.</p>
+            </details>
+            <details class="faq-item">
+                <summary>Where should I meet for pickup?</summary>
+                <p>Choose a public, well-lit MMU location that works for both people. Do not share sensitive personal information unnecessarily.</p>
+            </details>
+        </section>
+
+        <section class="faq-group" id="safety">
+            <h2>Safety and support</h2>
+            <details class="faq-item">
+                <summary>How do I report a seller or listing?</summary>
+                <p>Open the listing, choose Report, select the reason, and include enough detail for the marketplace team to investigate.</p>
+            </details>
+            <details class="faq-item">
+                <summary>What should I do if I suspect a scam?</summary>
+                <p>Stop the transaction, keep relevant messages or receipts, and contact the marketplace team with the listing and seller details.</p>
+            </details>
+            <details class="faq-item">
+                <summary>How do I contact the marketplace team?</summary>
+                <p>Use the Contact link in the footer, complete the form, and send your message. The team will review it and reply to your email.</p>
+            </details>
+        </section>
+    </div>
+</section>
+{% endblock %}

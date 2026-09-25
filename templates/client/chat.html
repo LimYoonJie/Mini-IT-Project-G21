@@ -5,7 +5,10 @@
 {% block content %}
 <section class="chat-page">
     <a href="{% url 'product_detail' product_id=product.id %}" class="back-link">Back to listing</a>
-    <h1>Chat with {{ seller_name }}</h1>
+    <div class="chat-heading-row">
+        <h1>Chat with {{ seller_name }}</h1>
+        <button type="button" class="report-listing-button" data-report-open="report-user-{{ product.id }}">Report user</button>
+    </div>
     <div class="chat-listing">
         <img src="{{ product.image }}" alt="{{ product.name }}">
         <div>
@@ -28,5 +31,31 @@
         <textarea id="message" name="message" rows="4" placeholder="Example: Hi, would you accept RM 50?" required></textarea>
         <button type="submit" class="btn btn-primary">Send to Seller</button>
     </form>
+
+    <div class="report-modal" id="report-user-{{ product.id }}" role="dialog" aria-modal="true" aria-labelledby="report-user-title-{{ product.id }}" hidden>
+        <div class="report-modal-backdrop" data-report-close></div>
+        <div class="report-modal-content">
+            <button type="button" class="report-modal-close" data-report-close aria-label="Close report form">&times;</button>
+            <p class="section-label">USER REPORT</p>
+            <h2 id="report-user-title-{{ product.id }}">Report this user</h2>
+            <p class="report-modal-note">Choose a reason. If you select Other, explain what happened so the team can review it.</p>
+
+            <form method="POST" action="{% url 'report_chat_user' product_id=product.id %}" class="report-form">
+                {% csrf_token %}
+                <label for="chat-report-reason-{{ product.id }}">Reason</label>
+                <select id="chat-report-reason-{{ product.id }}" name="reason" required data-report-reason>
+                    <option value="">Select a reason</option>
+                    <option value="offensive">Offensive or harassing behavior</option>
+                    <option value="suspicious">Suspicious or scam behavior</option>
+                    <option value="impersonation">Impersonation</option>
+                    <option value="spam">Spam or unwanted messages</option>
+                    <option value="other">Other</option>
+                </select>
+                <label for="chat-report-details-{{ product.id }}" data-report-details-label hidden>Please specify</label>
+                <textarea id="chat-report-details-{{ product.id }}" name="details" rows="4" maxlength="1000" placeholder="Tell us what happened..." data-report-details hidden></textarea>
+                <button type="submit" class="btn btn-primary">Send report</button>
+            </form>
+        </div>
+    </div>
 </section>
 {% endblock %}
