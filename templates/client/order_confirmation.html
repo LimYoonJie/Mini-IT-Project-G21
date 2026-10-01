@@ -6,9 +6,16 @@ Order Confirmation | MMU Second-Hand Marketplace
 
 {% block content %}
 
-<h1>Order Confirmed</h1>
-
-<p>Thank you for your purchase.</p>
+{% if order and order.status == "paid" %}
+    <h1>Order Confirmed</h1>
+    <p>Thank you for your purchase. Order #{{ order.id }} is paid.</p>
+{% elif order %}
+    <h1>Payment Processing</h1>
+    <p>Your payment for order #{{ order.id }} is not confirmed yet. This page will update after Stripe confirms it.</p>
+{% else %}
+    <h1>No Completed Order Found</h1>
+    <p>We could not find a completed checkout for this account.</p>
+{% endif %}
 
 <a href="{% url 'product_list' %}" class="btn btn-primary">
     Continue Shopping

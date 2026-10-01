@@ -101,3 +101,37 @@ class ListingReport(models.Model):
 
     def __str__(self):
         return f"Report for {self.product} ({self.get_reason_display()})"
+
+
+class MarketplaceOrder(models.Model):
+    class Status(models.TextChoices):
+        PENDING = "pending", "Pending payment"
+        PAID = "paid", "Paid"
+        CANCELLED = "cancelled", "Cancelled"
+
+    buyer = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="marketplace_orders",
+    )
+    total = models.DecimalField(max_digits=10, decimal_places=2)
+    status = models.CharField(max_length=10, choices=Status.choices, default=Status.PENDING)
+    stripe_session_id = models.CharField(max_length=255, unique=True, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    paid_at = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return f"Order #{self.pk} ({self.get_status_display()})"
+
+
+class MarketplaceOrderItem(models.Model):
+    order = models.ForeignKey(MarketplaceOrder, on_delete=models.CASCADE, related_name="items")
+    product = models.ForeignKey(Product, on_delete=models.PROTECT, related_name="order_items")
+    product_name = models.CharField(max_length=200)
+    unit_price = models.DecimalField(max_digits=10, decimal_places=2)
+    quantity = models.PositiveIntegerField(default=1)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["order", "product"], name="unique_product_per_marketplace_order")
+        ]

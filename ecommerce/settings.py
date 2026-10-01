@@ -6,12 +6,30 @@ from dotenv import load_dotenv
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / ".env")
 
-SECRET_KEY = "mini-it-project-g21-django-development-key"
-DEBUG = True
-ALLOWED_HOSTS = ["127.0.0.1", "localhost", "0.0.0.0", "[::1]", "testserver"]
+DEBUG = os.environ.get("DJANGO_DEBUG", "True").lower() in {"true", "1", "yes"}
+SECRET_KEY = os.environ.get("DJANGO_SECRET_KEY") or (
+    "mini-it-project-g21-django-development-key" if DEBUG else ""
+)
+if not SECRET_KEY:
+    raise RuntimeError("DJANGO_SECRET_KEY must be set when DEBUG is disabled.")
+
+default_allowed_hosts = "127.0.0.1,localhost,0.0.0.0,[::1],testserver" if DEBUG else ""
+ALLOWED_HOSTS = [
+    host.strip()
+    for host in os.environ.get(
+        "DJANGO_ALLOWED_HOSTS",
+        default_allowed_hosts,
+    ).split(",")
+    if host.strip()
+]
+CSRF_TRUSTED_ORIGINS = [
+    origin.strip()
+    for origin in os.environ.get("DJANGO_CSRF_TRUSTED_ORIGINS", "").split(",")
+    if origin.strip()
+]
 
 INSTALLED_APPS = [
-    "simpleui",
+    "ecommerce.apps.SecureSimpleUIConfig",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -70,7 +88,18 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
+if not DEBUG:
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_SECONDS = 31536000
+
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+X_FRAME_OPTIONS = "SAMEORIGIN"
+
+STRIPE_SECRET_KEY = os.environ.get("STRIPE_SECRET_KEY", "")
+STRIPE_WEBHOOK_SECRET = os.environ.get("STRIPE_WEBHOOK_SECRET", "")
 
 EMAIL_HOST = os.environ.get("EMAIL_HOST", "")
 EMAIL_PORT = int(os.environ.get("EMAIL_PORT", "587"))

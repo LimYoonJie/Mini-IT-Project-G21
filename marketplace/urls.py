@@ -18,6 +18,7 @@ urlpatterns = [
     path("cart/remove/<int:product_id>", views.remove_from_cart, name="remove_from_cart"),
     path("checkout", views.checkout, name="checkout"),
     path("order-confirmation", views.order_confirmation, name="order_confirmation"),
+    path("stripe/webhook", views.stripe_webhook, name="stripe_webhook"),
     path("login", views.login, name="login"),
     path("login/verify", views.verify_login, name="verify_login"),
     path("login/resend", views.resend_login_otp, name="resend_login_otp"),

@@ -2,17 +2,31 @@ import secrets
 from datetime import timedelta
 from decimal import Decimal, InvalidOperation
 
+import stripe
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import authenticate, get_user_model, login as auth_login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.hashers import check_password, make_password
 from django.core.mail import send_mail
-from django.db.models import Case, IntegerField, Q, Value, When
+from django.db import transaction
+from django.db.models import Case, F, IntegerField, Q, Value, When
+from django.http import HttpResponse, HttpResponseBadRequest
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils import timezone
+from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
-from .models import ChatMessage, ListingReport, MarketplaceProfile, PendingRegistration, Product
+from .models import (
+    ChatMessage,
+    ListingReport,
+    MarketplaceOrder,
+    MarketplaceOrderItem,
+    MarketplaceProfile,
+    PendingRegistration,
+    Product,
+)
 
 User = get_user_model()
 MMU_EMAIL_DOMAIN = "@student.mmu.edu.my"
@@ -346,12 +360,160 @@ def product_chat(request, product_id):
     )
 
 
+@login_required(login_url="login")
 def checkout(request):
-    return render(request, "client/checkout.html")
+    cart_items = _cart_items(request)
+    total = sum((item["subtotal"] for item in cart_items), Decimal("0.00"))
+
+    if request.method == "POST":
+        if not cart_items:
+            messages.error(request, "Your cart is empty.")
+            return redirect("cart")
+        if not settings.STRIPE_SECRET_KEY:
+            messages.error(request, "Online checkout is not configured yet.")
+            return render(request, "client/checkout.html", {"cart_items": cart_items, "total": total})
+
+        try:
+            with transaction.atomic():
+                product_ids = [item["product"].id for item in cart_items]
+                products = {
+                    product.id: product
+                    for product in Product.objects.select_for_update()
+                    .filter(id__in=product_ids)
+                    .order_by("id")
+                }
+                if len(products) != len(product_ids):
+                    raise ValueError("A cart item is no longer available.")
+
+                fresh_items = []
+                total = Decimal("0.00")
+                for item in cart_items:
+                    product = products[item["product"].id]
+                    quantity = item["quantity"]
+                    reserved = Product.objects.filter(
+                        pk=product.pk,
+                        stock__gte=quantity,
+                    ).update(stock=F("stock") - quantity)
+                    if not reserved:
+                        raise ValueError(f"{product.name} is no longer in stock.")
+                    subtotal = product.price * quantity
+                    fresh_items.append((product, quantity))
+                    total += subtotal
+
+                order = MarketplaceOrder.objects.create(buyer=request.user, total=total)
+                MarketplaceOrderItem.objects.bulk_create(
+                    [
+                        MarketplaceOrderItem(
+                            order=order,
+                            product=product,
+                            product_name=product.name,
+                            unit_price=product.price,
+                            quantity=quantity,
+                        )
+                        for product, quantity in fresh_items
+                    ]
+                )
+        except ValueError as error:
+            messages.error(request, str(error))
+            return redirect("cart")
+
+        stripe.api_key = settings.STRIPE_SECRET_KEY
+        try:
+            session = stripe.checkout.Session.create(
+                mode="payment",
+                client_reference_id=str(order.pk),
+                metadata={"order_id": str(order.pk)},
+                line_items=[
+                    {
+                        "price_data": {
+                            "currency": "myr",
+                            "product_data": {"name": item.product_name},
+                            "unit_amount": int(item.unit_price * 100),
+                        },
+                        "quantity": item.quantity,
+                    }
+                    for item in order.items.all()
+                ],
+                success_url=request.build_absolute_uri(reverse("order_confirmation"))
+                + "?session_id={CHECKOUT_SESSION_ID}",
+                cancel_url=request.build_absolute_uri(reverse("checkout")),
+                expires_at=int(timezone.now().timestamp()) + 35 * 60,
+            )
+        except stripe.StripeError:
+            _cancel_marketplace_order(order.pk)
+            messages.error(request, "We could not start payment. Your cart has not been charged.")
+            return redirect("checkout")
+
+        order.stripe_session_id = session.id
+        order.save(update_fields=["stripe_session_id"])
+        return redirect(session.url)
+
+    return render(request, "client/checkout.html", {"cart_items": cart_items, "total": total})
 
 
+def _cancel_marketplace_order(order_id, stripe_session_id=None):
+    with transaction.atomic():
+        order = MarketplaceOrder.objects.select_for_update().get(pk=order_id)
+        if order.status != MarketplaceOrder.Status.PENDING or (
+            stripe_session_id and order.stripe_session_id != stripe_session_id
+        ):
+            return
+        for item in order.items.all():
+            Product.objects.filter(pk=item.product_id).update(stock=F("stock") + item.quantity)
+        order.status = MarketplaceOrder.Status.CANCELLED
+        order.save(update_fields=["status"])
+
+
+def _mark_marketplace_order_paid(session):
+    order_id = session.get("metadata", {}).get("order_id") or session.get("client_reference_id")
+    if not order_id:
+        return
+    with transaction.atomic():
+        order = MarketplaceOrder.objects.select_for_update().filter(pk=order_id).first()
+        if (
+            order
+            and order.status == MarketplaceOrder.Status.PENDING
+            and order.stripe_session_id == session.get("id")
+        ):
+            order.status = MarketplaceOrder.Status.PAID
+            order.paid_at = timezone.now()
+            order.save(update_fields=["status", "paid_at"])
+
+
+@csrf_exempt
+@require_POST
+def stripe_webhook(request):
+    if not settings.STRIPE_WEBHOOK_SECRET:
+        return HttpResponse(status=503)
+    try:
+        event = stripe.Webhook.construct_event(
+            request.body,
+            request.headers.get("Stripe-Signature", ""),
+            settings.STRIPE_WEBHOOK_SECRET,
+        )
+    except (ValueError, stripe.SignatureVerificationError):
+        return HttpResponseBadRequest("Invalid Stripe webhook signature.")
+
+    session = event["data"]["object"]
+    if event["type"] in {"checkout.session.completed", "checkout.session.async_payment_succeeded"}:
+        if session.get("payment_status") == "paid":
+            _mark_marketplace_order_paid(session)
+    elif event["type"] in {"checkout.session.expired", "checkout.session.async_payment_failed"}:
+        order_id = session.get("metadata", {}).get("order_id") or session.get("client_reference_id")
+        if order_id:
+            _cancel_marketplace_order(order_id, session.get("id"))
+    return HttpResponse(status=200)
+
+
+@login_required(login_url="login")
 def order_confirmation(request):
-    return render(request, "client/order_confirmation.html")
+    order = MarketplaceOrder.objects.filter(
+        stripe_session_id=request.GET.get("session_id", ""),
+        buyer=request.user,
+    ).first()
+    if order and order.status == MarketplaceOrder.Status.PAID:
+        request.session.pop("cart", None)
+    return render(request, "client/order_confirmation.html", {"order": order})
 
 
 def contact(request):

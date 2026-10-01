@@ -4,6 +4,7 @@
 # Python generated files
 __pycache__/
 *.py[cod]
+.venv/
 
 # Local databases and uploaded media
 *.sqlite3
