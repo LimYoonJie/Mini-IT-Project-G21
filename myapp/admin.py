@@ -19,27 +19,6 @@ class MyAdminSite(admin.AdminSite):
 admin.site.__class__ = MyAdminSite
 
 
-# Admin product management
-try:
-    admin.site.unregister(Product)
-except admin.sites.NotRegistered:
-    pass
-
-
-@admin.register(Product)
-class ProductManagementAdmin(admin.ModelAdmin):
-    form = ProductAdminForm
-    list_display = ('id', 'name', 'category', 'price', 'stock')
-    list_filter = ('category',)
-    search_fields = ('name', 'category')
-    actions = ['force_out_of_stock']
-
-    def force_out_of_stock(self, request, queryset):
-        queryset.update(stock=0)
-        self.message_user(request, "Success: Selected violating items have been forcefully taken down (Stock cleared).")
-    force_out_of_stock.short_description = "Force take down selected items (Violation)"
-
-
 # ban/unban users
 class CustomUserAdmin(admin.ModelAdmin):
     list_display = ('id', 'username', 'email', 'is_active', 'is_staff')

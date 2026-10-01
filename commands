@@ -3,6 +3,7 @@
 3. python manage.py migrate (update database)
 4. python manage.py createsuperuser (create admin)
 5. python manage.py changepassword
+6. venv\Scripts\activate
 
 models.py (setup database columns)
 views.py (control page data)
