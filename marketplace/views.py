@@ -1,3 +1,4 @@
+import logging
 import secrets
 from smtplib import SMTPException
 from datetime import timedelta
@@ -36,6 +37,7 @@ from .models import (
 )
 
 User = get_user_model()
+logger = logging.getLogger(__name__)
 MMU_EMAIL_DOMAIN = "@student.mmu.edu.my"
 OTP_EXPIRY_MINUTES = 10
 RESEND_COOLDOWN_SECONDS = 60
@@ -882,8 +884,10 @@ def register(request):
                 pending.otp_hash = make_password(otp)
                 pending.otp_created_at = now
                 pending.expires_at = now + timedelta(minutes=OTP_EXPIRY_MINUTES)
+                if not _send_otp(email, otp):
+                    messages.error(request, "We could not send the registration OTP. Check the email server settings and try again.")
+                    return render(request, "client/register.html")
                 pending.save()
-                _send_otp(email, otp)
                 request.session["pending_registration_id"] = pending.id
                 messages.success(request, f"An OTP was sent to {email}.")
                 return redirect("verify_registration")
@@ -935,11 +939,14 @@ def resend_registration_otp(request):
         return redirect("verify_registration")
 
     otp = _new_otp()
+    now = timezone.now()
+    if not _send_otp(pending.email, otp):
+        messages.error(request, "We could not send the registration OTP. Check the email server settings and try again.")
+        return redirect("verify_registration")
     pending.otp_hash = make_password(otp)
-    pending.otp_created_at = timezone.now()
-    pending.expires_at = pending.otp_created_at + timedelta(minutes=OTP_EXPIRY_MINUTES)
+    pending.otp_created_at = now
+    pending.expires_at = now + timedelta(minutes=OTP_EXPIRY_MINUTES)
     pending.save(update_fields=["otp_hash", "otp_created_at", "expires_at"])
-    _send_otp(pending.email, otp)
     messages.success(request, "A new OTP was sent to your email.")
     return redirect("verify_registration")
 
@@ -956,22 +963,33 @@ def _pending_from_session(request):
 
 
 def _send_otp(email, otp):
-    send_mail(
+    return _deliver_otp(
         "MMU Marketplace registration OTP",
-        f"Your MMU Marketplace verification code is {otp}. It expires in {OTP_EXPIRY_MINUTES} minutes.",
-        settings.DEFAULT_FROM_EMAIL,
-        [email],
+        email,
+        otp,
     )
 
 
 def _send_login_otp(email, otp):
-    return send_mail(
+    return _deliver_otp(
         "MMU Marketplace login OTP",
-        f"Your MMU Marketplace login verification code is {otp}. It expires in {OTP_EXPIRY_MINUTES} minutes.",
-        settings.DEFAULT_FROM_EMAIL,
-        [email],
-        fail_silently=True,
+        email,
+        otp,
     )
+
+
+def _deliver_otp(subject, email, otp):
+    try:
+        return send_mail(
+            subject,
+            f"Your MMU Marketplace verification code is {otp}. It expires in {OTP_EXPIRY_MINUTES} minutes.",
+            settings.DEFAULT_FROM_EMAIL,
+            [email],
+            fail_silently=False,
+        ) == 1
+    except (BadHeaderError, OSError, SMTPException) as error:
+        logger.error("OTP email delivery failed (%s)", type(error).__name__)
+        return False
 
 
 def _send_marketplace_report_email(subject, body):

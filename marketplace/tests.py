@@ -1,4 +1,5 @@
 from decimal import Decimal
+from smtplib import SMTPException
 from types import SimpleNamespace
 from unittest.mock import patch
 
@@ -14,6 +15,7 @@ from .models import (
     ListingReport,
     MarketplaceOrder,
     MarketplaceOrderItem,
+    PendingRegistration,
     Product,
     ProductReview,
     Purchase,
@@ -112,6 +114,43 @@ class ProductAdminCategoryTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'value="Electronics"', html=False)
+
+
+class RegistrationEmailDeliveryTests(TestCase):
+    @patch("marketplace.views.send_mail", side_effect=SMTPException("SMTP unavailable"))
+    def test_registration_reports_email_failure_without_creating_pending_registration(self, send_mail_mock):
+        response = self.client.post(
+            reverse("register"),
+            {
+                "name": "MMU Student",
+                "email": "student@student.mmu.edu.my",
+                "password": "Password123",
+                "confirm_password": "Password123",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "We could not send the registration OTP")
+        self.assertFalse(PendingRegistration.objects.exists())
+        send_mail_mock.assert_called_once()
+
+    @patch("marketplace.views.send_mail", side_effect=SMTPException("SMTP unavailable"))
+    def test_login_reports_email_failure_instead_of_redirecting_to_verification(self, send_mail_mock):
+        user = User.objects.create_user(
+            username="login-student@student.mmu.edu.my",
+            email="login-student@student.mmu.edu.my",
+            password="Password123",
+        )
+
+        response = self.client.post(
+            reverse("login"),
+            {"email": user.email, "password": "Password123"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "We could not send the login OTP")
+        self.assertNotIn("Location", response)
+        send_mail_mock.assert_called_once()
 
 
 class StripeCheckoutTests(TestCase):
