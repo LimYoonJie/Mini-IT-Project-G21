@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import ListingReport, MarketplaceOrder, MarketplaceOrderItem, Product
+from .models import ListingReport, Product, ProductReview, Purchase, ReviewAttachment, ReviewHelpfulVote
+from .models import MarketplaceOrder, MarketplaceOrderItem
 
 
 @admin.register(Product)
@@ -33,3 +34,8 @@ class MarketplaceOrderAdmin(admin.ModelAdmin):
 
     def has_add_permission(self, request):
         return False
+
+admin.site.register(Purchase)
+admin.site.register(ProductReview)
+admin.site.register(ReviewAttachment)
+admin.site.register(ReviewHelpfulVote)

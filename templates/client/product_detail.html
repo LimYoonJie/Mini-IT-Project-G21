@@ -82,4 +82,70 @@
 
 </div>
 
+<section class="reviews-section" aria-labelledby="reviews-title">
+    <div class="reviews-heading">
+        <div>
+            <p class="section-label">Customer feedback</p>
+            <h2 id="reviews-title">Reviews</h2>
+        </div>
+        <span class="review-count">{{ reviews|length }} review{{ reviews|length|pluralize }}</span>
+    </div>
+
+    {% if can_review %}
+        <form class="review-form" method="POST" action="{% url 'submit_review' product_id=product.id %}" enctype="multipart/form-data">
+            {% csrf_token %}
+            <label for="review-rating">Your rating</label>
+            <select id="review-rating" name="rating" required>
+                <option value="">Choose stars</option>
+                <option value="5">5 stars</option>
+                <option value="4">4 stars</option>
+                <option value="3">3 stars</option>
+                <option value="2">2 stars</option>
+                <option value="1">1 star</option>
+            </select>
+            <label for="review-comment">Your comment</label>
+            <textarea id="review-comment" name="comment" rows="4" maxlength="2000" required placeholder="How was this product?"></textarea>
+            <label for="review-attachments">Attachments</label>
+            <input id="review-attachments" name="attachments" type="file" multiple>
+            <button type="submit" class="btn btn-primary">Post review</button>
+        </form>
+    {% elif request.user.is_authenticated and user_review %}
+        <p class="review-note">You have already reviewed this product.</p>
+    {% elif request.user.is_authenticated %}
+        <p class="review-note">Reviews are available after you buy this product.</p>
+    {% else %}
+        <p class="review-note"><a href="{% url 'login' %}?next={{ request.path|urlencode }}">Log in</a> after buying this product to leave a review.</p>
+    {% endif %}
+
+    <div class="reviews-list">
+        {% for review in reviews %}
+            <article class="review-item">
+                <div class="review-meta">
+                    <strong>{{ review.reviewer.get_full_name|default:review.reviewer.email }}</strong>
+                    <span class="review-stars" aria-label="{{ review.rating }} out of 5 stars">{{ review.rating }}/5</span>
+                    <time datetime="{{ review.created_at|date:'c' }}">{{ review.created_at|date:"M j, Y" }}</time>
+                </div>
+                <p>{{ review.comment|linebreaksbr }}</p>
+                {% if review.attachments.all %}
+                    <div class="review-attachments">
+                        {% for attachment in review.attachments.all %}
+                            <a href="{{ attachment.file.url }}" target="_blank" rel="noopener">View attachment {{ forloop.counter }}</a>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+                {% if request.user.is_authenticated and request.user != review.reviewer %}
+                    <form method="POST" action="{% url 'helpful_review' review_id=review.id %}" class="helpful-form">
+                        {% csrf_token %}
+                        <button type="submit" class="helpful-button">Helpful [{{ review.helpful_votes.count }}]</button>
+                    </form>
+                {% else %}
+                    <span class="helpful-count">Helpful [{{ review.helpful_votes.count }}]</span>
+                {% endif %}
+            </article>
+        {% empty %}
+            <p class="review-note">No reviews yet.</p>
+        {% endfor %}
+    </div>
+</section>
+
 {% endblock %}
