@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Saved Items | MMU Second-Hand Marketplace{% endblock %}
+
+{% block content %}
+<section class="profile-page">
+    <div class="section-header">
+        <div>
+            <span class="section-label">YOUR ACCOUNT</span>
+            <h1>Saved Items</h1>
+        </div>
+    </div>
+    {% if favorites %}
+        <div class="product-grid">
+            {% for favorite in favorites %}
+                {% with product=favorite.product %}
+                    <article class="product-card">
+                        <div class="product-image">
+                            {% if product.image %}<img src="{{ product.image.url }}" alt="{{ product.name }}">{% else %}<span class="image-placeholder">No image</span>{% endif %}
+                        </div>
+                        <div class="product-content">
+                            <span class="product-category">{{ product.category }}</span>
+                            <h2>{{ product.name }}</h2>
+                            <div class="product-footer">
+                                <strong class="product-price">RM {{ product.price|floatformat:2 }}</strong>
+                                <a href="{% url 'product_detail' product_id=product.id %}" class="product-button">View</a>
+                            </div>
+                        </div>
+                    </article>
+                {% endwith %}
+            {% endfor %}
+        </div>
+    {% else %}
+        <p class="empty-state">You have not saved any items yet.</p>
+        <a class="btn btn-primary" href="{% url 'product_list' %}">Browse Products</a>
+    {% endif %}
+</section>
+{% endblock %}

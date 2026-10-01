@@ -66,6 +66,15 @@
 
         {% endif %}
 
+        {% if request.user.is_authenticated %}
+            <form method="POST" action="{% url 'toggle_favorite' product_id=product.id %}">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-secondary">{% if is_favorite %}Remove from Saved{% else %}Save Item{% endif %}</button>
+            </form>
+        {% else %}
+            <a href="{% url 'login' %}?next={{ request.path|urlencode }}" class="btn btn-secondary">Log in to Save</a>
+        {% endif %}
+
         {% if request.user.is_authenticated and request.user == product.seller %}
             <div class="product-owner-actions">
                 <a href="{% url 'edit_listing' product_id=product.id %}" class="btn btn-secondary">Edit Listing</a>

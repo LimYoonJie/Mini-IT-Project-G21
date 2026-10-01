@@ -11,9 +11,10 @@ class ProductAdmin(admin.ModelAdmin):
 
 @admin.register(ListingReport)
 class ListingReportAdmin(admin.ModelAdmin):
-    list_display = ("product", "reason", "reporter", "created_at")
-    list_filter = ("reason", "created_at")
+    list_display = ("product", "reason", "reporter", "status", "created_at", "reviewed_at")
+    list_filter = ("status", "reason", "created_at")
     search_fields = ("product__name", "details", "reporter__email")
+    list_editable = ("status",)
     readonly_fields = ("product", "reporter", "reason", "details", "created_at")
 
 

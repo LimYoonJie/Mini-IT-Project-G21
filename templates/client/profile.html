@@ -29,6 +29,10 @@ My Profile | MMU Second-Hand Marketplace
                 <button type="submit" class="btn btn-primary">Save</button>
             </form>
             <a href="{% url 'account_settings' %}" class="btn btn-secondary">Account Settings</a>
+            <a href="{% url 'order_history' %}" class="btn btn-secondary">My Orders</a>
+            <a href="{% url 'wishlist' %}" class="btn btn-secondary">Saved Items</a>
+            <a href="{% url 'seller_inbox' %}" class="btn btn-secondary">Seller Inbox</a>
+            <a href="{% url 'seller_orders' %}" class="btn btn-secondary">Seller Orders</a>
             <form method="POST" action="{% url 'logout' %}" class="profile-logout-form">
                 {% csrf_token %}
                 <button type="submit" class="btn btn-danger">Logout</button>
@@ -81,9 +85,10 @@ My Profile | MMU Second-Hand Marketplace
                 </div>
             </div>
 
-            {% if buying_products %}
+            {% if purchases %}
                 <div class="product-grid">
-                    {% for product in buying_products %}
+                    {% for purchase in purchases %}
+                        {% with product=purchase.product %}
                         <article class="product-card">
                             <div class="product-image">
                                 {% if product.image %}
@@ -97,11 +102,12 @@ My Profile | MMU Second-Hand Marketplace
                                 <h3>{{ product.name }}</h3>
                                 <p class="product-description">{{ product.description|truncatechars:80 }}</p>
                                 <div class="product-footer">
-                                    <strong class="product-price">RM {{ product.price|floatformat:2 }}</strong>
+                                    <strong class="product-price">RM {{ purchase.price|floatformat:2 }}</strong>
                                     <a href="{% url 'product_detail' product_id=product.id %}" class="product-button">View</a>
                                 </div>
                             </div>
                         </article>
+                        {% endwith %}
                     {% endfor %}
                 </div>
             {% else %}

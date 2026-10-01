@@ -6,8 +6,8 @@
 <section class="chat-page">
     <a href="{% url 'product_detail' product_id=product.id %}" class="back-link">Back to listing</a>
     <div class="chat-heading-row">
-        <h1>Chat with {{ seller_name }}</h1>
-        <button type="button" class="report-listing-button" data-report-open="report-user-{{ product.id }}">Report user</button>
+        <h1>{% if is_seller %}Chat with {{ conversation_buyer.get_full_name|default:conversation_buyer.email }}{% else %}Chat with {{ seller_name }}{% endif %}</h1>
+        {% if not is_seller %}<button type="button" class="report-listing-button" data-report-open="report-user-{{ product.id }}">Report user</button>{% endif %}
     </div>
     <div class="chat-listing">
         <img src="{{ product.image }}" alt="{{ product.name }}">
@@ -19,20 +19,24 @@
 
     <div class="chat-messages">
         {% for chat_message in chat_messages %}
-            <p class="chat-message">{{ chat_message.message }} <small>{{ chat_message.created_at|date:"d M Y, H:i" }}</small></p>
+            <p class="chat-message{% if chat_message.is_mine %} chat-message-own{% endif %}">
+                <strong>{% if chat_message.sender %}{{ chat_message.sender.get_full_name|default:chat_message.sender.email }}{% else %}{{ chat_message.buyer.get_full_name|default:chat_message.buyer.email }}{% endif %}</strong>
+                {{ chat_message.message }} <small>{{ chat_message.created_at|date:"d M Y, H:i" }}</small>
+            </p>
         {% empty %}
             <p class="form-note">Start the conversation by making an offer.</p>
         {% endfor %}
     </div>
 
-    <form method="POST" class="chat-form">
+    <form method="POST" action="{% url 'product_chat' product_id=product.id %}?buyer={{ conversation_buyer.id }}" class="chat-form">
         {% csrf_token %}
+        <input type="hidden" name="buyer" value="{{ conversation_buyer.id }}">
         <label for="message">Your offer or message</label>
         <textarea id="message" name="message" rows="4" placeholder="Example: Hi, would you accept RM 50?" required></textarea>
-        <button type="submit" class="btn btn-primary">Send to Seller</button>
+        <button type="submit" class="btn btn-primary">{% if is_seller %}Send Reply{% else %}Send to Seller{% endif %}</button>
     </form>
 
-    <div class="report-modal" id="report-user-{{ product.id }}" role="dialog" aria-modal="true" aria-labelledby="report-user-title-{{ product.id }}" hidden>
+    {% if not is_seller %}<div class="report-modal" id="report-user-{{ product.id }}" role="dialog" aria-modal="true" aria-labelledby="report-user-title-{{ product.id }}" hidden>
         <div class="report-modal-backdrop" data-report-close></div>
         <div class="report-modal-content">
             <button type="button" class="report-modal-close" data-report-close aria-label="Close report form">&times;</button>
@@ -40,7 +44,7 @@
             <h2 id="report-user-title-{{ product.id }}">Report this user</h2>
             <p class="report-modal-note">Choose a reason. If you select Other, explain what happened so the team can review it.</p>
 
-            <form method="POST" action="{% url 'report_chat_user' product_id=product.id %}" class="report-form">
+            <form method="POST" action="{% url 'report_chat_user' product_id=product.id %}?buyer={{ conversation_buyer.id }}" class="report-form">
                 {% csrf_token %}
                 <label for="chat-report-reason-{{ product.id }}">Reason</label>
                 <select id="chat-report-reason-{{ product.id }}" name="reason" required data-report-reason>
@@ -56,6 +60,6 @@
                 <button type="submit" class="btn btn-primary">Send report</button>
             </form>
         </div>
-    </div>
+    </div>{% endif %}
 </section>
 {% endblock %}

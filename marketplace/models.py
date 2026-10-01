@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.db import models
+from django.utils import timezone
 
 
 class Product(models.Model):
@@ -57,6 +58,13 @@ class PendingRegistration(models.Model):
 class ChatMessage(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="chat_messages")
     buyer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="buyer_messages")
+    sender = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name="sent_marketplace_messages",
+    )
     seller = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         blank=True,
@@ -72,6 +80,12 @@ class ChatMessage(models.Model):
 
 
 class ListingReport(models.Model):
+    class Status(models.TextChoices):
+        OPEN = "open", "Open"
+        REVIEWING = "reviewing", "Reviewing"
+        RESOLVED = "resolved", "Resolved"
+        DISMISSED = "dismissed", "Dismissed"
+
     REASON_CHOICES = [
         ("offensive", "Offensive behavior/content"),
         ("suspicious", "Suspicious account"),
@@ -94,6 +108,8 @@ class ListingReport(models.Model):
     )
     reason = models.CharField(max_length=20, choices=REASON_CHOICES)
     details = models.TextField(blank=True)
+    status = models.CharField(max_length=12, choices=Status.choices, default=Status.OPEN)
+    reviewed_at = models.DateTimeField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -101,6 +117,13 @@ class ListingReport(models.Model):
 
     def __str__(self):
         return f"Report for {self.product} ({self.get_reason_display()})"
+
+    def save(self, *args, **kwargs):
+        if self.pk:
+            previous_status = type(self).objects.filter(pk=self.pk).values_list("status", flat=True).first()
+            if previous_status != self.status:
+                self.reviewed_at = timezone.now()
+        super().save(*args, **kwargs)
 
 
 class MarketplaceOrder(models.Model):
@@ -125,11 +148,22 @@ class MarketplaceOrder(models.Model):
 
 
 class MarketplaceOrderItem(models.Model):
+    class FulfillmentStatus(models.TextChoices):
+        PENDING = "pending", "Pending"
+        PROCESSING = "processing", "Processing"
+        SHIPPED = "shipped", "Shipped"
+        COMPLETED = "completed", "Completed"
+
     order = models.ForeignKey(MarketplaceOrder, on_delete=models.CASCADE, related_name="items")
     product = models.ForeignKey(Product, on_delete=models.PROTECT, related_name="order_items")
     product_name = models.CharField(max_length=200)
     unit_price = models.DecimalField(max_digits=10, decimal_places=2)
     quantity = models.PositiveIntegerField(default=1)
+    fulfillment_status = models.CharField(
+        max_length=12,
+        choices=FulfillmentStatus.choices,
+        default=FulfillmentStatus.PENDING,
+    )
 
     class Meta:
         constraints = [
@@ -145,12 +179,34 @@ class Purchase(models.Model):
 
     buyer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="marketplace_purchases")
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="purchases")
+    order_item = models.OneToOneField(
+        MarketplaceOrderItem,
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name="purchase_record",
+    )
     price = models.DecimalField(max_digits=10, decimal_places=2)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="completed")
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"Purchase #{self.id} - {self.product.name}"
+
+
+class Favorite(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="marketplace_favorites")
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name="favorites")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        constraints = [
+            models.UniqueConstraint(fields=["user", "product"], name="one_favorite_per_user_product"),
+        ]
+
+    def __str__(self):
+        return f"{self.user} saved {self.product}"
 
 
 class ProductReview(models.Model):

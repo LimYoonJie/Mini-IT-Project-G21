@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}Seller Inbox | MMU Second-Hand Marketplace{% endblock %}
+
+{% block content %}
+<section class="profile-page">
+    <div class="section-header">
+        <div>
+            <span class="section-label">SELLING</span>
+            <h1>Seller Inbox</h1>
+        </div>
+    </div>
+    {% for conversation in conversations %}
+        <article class="profile-panel order-panel">
+            <div class="section-header">
+                <div><h2>{{ conversation.product.name }}</h2><p>{{ conversation.buyer.get_full_name|default:conversation.buyer.email }}</p></div>
+                <time>{{ conversation.created_at|date:"d M Y, H:i" }}</time>
+            </div>
+            <p>{{ conversation.message|truncatechars:180 }}</p>
+            <a class="btn btn-primary" href="{% url 'product_chat' product_id=conversation.product_id %}?buyer={{ conversation.buyer_id }}">Open Conversation</a>
+        </article>
+    {% empty %}
+        <p class="empty-state">No buyer messages yet.</p>
+    {% endfor %}
+</section>
+{% endblock %}

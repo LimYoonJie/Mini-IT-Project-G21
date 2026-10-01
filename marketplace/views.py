@@ -12,7 +12,7 @@ from django.contrib.auth.hashers import check_password, make_password
 from django.core.mail import BadHeaderError, EmailMessage, send_mail
 from django.db import transaction
 from django.db.models import Case, F, IntegerField, Q, Value, When
-from django.http import HttpResponse, HttpResponseBadRequest
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
@@ -21,6 +21,7 @@ from django.views.decorators.http import require_POST
 
 from .models import (
     ChatMessage,
+    Favorite,
     ListingReport,
     MarketplaceOrder,
     MarketplaceOrderItem,
@@ -184,12 +185,41 @@ def product_detail(request, product_id):
     if request.user.is_authenticated:
         user_review = ProductReview.objects.filter(product=product, reviewer=request.user).first()
         can_review = Purchase.objects.filter(product=product, buyer=request.user, status="completed").exists() and not user_review
+    is_favorite = request.user.is_authenticated and Favorite.objects.filter(
+        product=product,
+        user=request.user,
+    ).exists()
     reviews = product.reviews.select_related("reviewer").prefetch_related("attachments", "helpful_votes")
     return render(
         request,
         "client/product_detail.html",
-        {"product": product, "reviews": reviews, "user_review": user_review, "can_review": can_review},
+        {
+            "product": product,
+            "reviews": reviews,
+            "user_review": user_review,
+            "can_review": can_review,
+            "is_favorite": is_favorite,
+        },
     )
+
+
+@login_required(login_url="login")
+def wishlist(request):
+    favorites = Favorite.objects.filter(user=request.user).select_related("product")
+    return render(request, "client/wishlist.html", {"favorites": favorites})
+
+
+@login_required(login_url="login")
+@require_POST
+def toggle_favorite(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+    favorite, created = Favorite.objects.get_or_create(user=request.user, product=product)
+    if not created:
+        favorite.delete()
+        messages.success(request, "Removed from your saved items.")
+    else:
+        messages.success(request, "Added to your saved items.")
+    return redirect("product_detail", product_id=product.id)
 
 
 @login_required(login_url="login")
@@ -444,26 +474,70 @@ def _cart_items(request):
 @login_required(login_url="login")
 def product_chat(request, product_id):
     product = get_object_or_404(Product, id=product_id)
+    is_seller = product.seller_id == request.user.id
+    if is_seller:
+        buyer_id = request.GET.get("buyer") or request.POST.get("buyer")
+        if not buyer_id:
+            return redirect("seller_inbox")
+        conversation_buyer = get_object_or_404(User, id=buyer_id)
+        if not ChatMessage.objects.filter(
+            product=product,
+            buyer=conversation_buyer,
+            seller=request.user,
+        ).exists():
+            return HttpResponseForbidden("This conversation is not available to you.")
+    else:
+        if product.seller_id is None:
+            return HttpResponseForbidden("This listing has no seller conversation available.")
+        conversation_buyer = request.user
+
     if request.method == "POST":
         message = request.POST.get("message", "").strip()
         if message:
             ChatMessage.objects.create(
                 product=product,
-                buyer=request.user,
+                buyer=conversation_buyer,
                 seller=product.seller,
+                sender=request.user,
                 message=message,
             )
-            messages.success(request, "Your message was sent to the seller.")
-            return redirect("product_chat", product_id=product.id)
+            messages.success(request, "Your reply was sent." if is_seller else "Your message was sent to the seller.")
+            return redirect(f"{reverse('product_chat', args=[product.id])}?buyer={conversation_buyer.id}")
         messages.error(request, "Write a message before sending.")
 
-    chat_messages = ChatMessage.objects.filter(product=product, buyer=request.user)
+    chat_messages = ChatMessage.objects.filter(
+        product=product,
+        buyer=conversation_buyer,
+    ).filter(Q(seller=product.seller) | Q(seller__isnull=True))
+    for chat_message in chat_messages:
+        chat_message.is_mine = chat_message.sender_id == request.user.id
     seller_name = product.seller.get_full_name() or product.seller.email if product.seller else "Marketplace seller"
     return render(
         request,
         "client/chat.html",
-        {"product": product, "chat_messages": chat_messages, "seller_name": seller_name},
+        {
+            "product": product,
+            "chat_messages": chat_messages,
+            "seller_name": seller_name,
+            "conversation_buyer": conversation_buyer,
+            "is_seller": is_seller,
+        },
     )
+
+
+@login_required(login_url="login")
+def seller_inbox(request):
+    messages_for_seller = ChatMessage.objects.filter(seller=request.user).select_related(
+        "product", "buyer", "sender"
+    ).order_by("-created_at")
+    conversations = []
+    seen = set()
+    for chat_message in messages_for_seller:
+        key = (chat_message.product_id, chat_message.buyer_id)
+        if key not in seen:
+            seen.add(key)
+            conversations.append(chat_message)
+    return render(request, "client/seller_inbox.html", {"conversations": conversations})
 
 
 @login_required(login_url="login")
@@ -584,6 +658,17 @@ def _mark_marketplace_order_paid(session):
             order.status = MarketplaceOrder.Status.PAID
             order.paid_at = timezone.now()
             order.save(update_fields=["status", "paid_at"])
+            for item in order.items.select_related("product"):
+                Purchase.objects.get_or_create(
+                    order_item=item,
+                    defaults={
+                        "buyer": order.buyer,
+                        "product": item.product,
+                        "price": item.unit_price,
+                    },
+                )
+                item.fulfillment_status = MarketplaceOrderItem.FulfillmentStatus.PROCESSING
+                item.save(update_fields=["fulfillment_status"])
 
 
 @csrf_exempt
@@ -618,6 +703,45 @@ def order_confirmation(request):
     if order and order.status == MarketplaceOrder.Status.PAID:
         request.session.pop("cart", None)
     return render(request, "client/order_confirmation.html", {"order": order})
+
+
+@login_required(login_url="login")
+def order_history(request):
+    orders = MarketplaceOrder.objects.filter(buyer=request.user).prefetch_related(
+        "items__product"
+    ).order_by("-created_at")
+    return render(request, "client/order_history.html", {"orders": orders})
+
+
+@login_required(login_url="login")
+def seller_orders(request):
+    order_items = MarketplaceOrderItem.objects.filter(
+        product__seller=request.user,
+        order__status=MarketplaceOrder.Status.PAID,
+    ).select_related("product", "order", "order__buyer").order_by("-order__paid_at")
+    return render(request, "client/seller_orders.html", {"order_items": order_items})
+
+
+@login_required(login_url="login")
+@require_POST
+def update_fulfillment(request, item_id):
+    item = get_object_or_404(
+        MarketplaceOrderItem,
+        id=item_id,
+        product__seller=request.user,
+        order__status=MarketplaceOrder.Status.PAID,
+    )
+    next_status = {
+        MarketplaceOrderItem.FulfillmentStatus.PROCESSING: MarketplaceOrderItem.FulfillmentStatus.SHIPPED,
+        MarketplaceOrderItem.FulfillmentStatus.SHIPPED: MarketplaceOrderItem.FulfillmentStatus.COMPLETED,
+    }.get(item.fulfillment_status)
+    if next_status and request.POST.get("status") == next_status:
+        item.fulfillment_status = next_status
+        item.save(update_fields=["fulfillment_status"])
+        messages.success(request, f"Order item marked {item.get_fulfillment_status_display().lower()}.")
+    else:
+        messages.error(request, "That fulfillment update is not allowed.")
+    return redirect("seller_orders")
 
 
 def contact(request):
@@ -992,10 +1116,15 @@ def profile(request):
         return redirect("profile")
 
     selling_products = Product.objects.filter(seller=request.user).order_by("-created_at")
-    purchased_ids = request.session.get("purchased_products", [])
-    buying_products = list(Product.objects.filter(id__in=purchased_ids).order_by("-created_at")) if purchased_ids else []
+    purchases = Purchase.objects.filter(
+        buyer=request.user,
+        status="completed",
+    ).select_related("product").order_by("-created_at")
 
-    initials = "".join(part[0].upper() for part in request.user.get_full_name().split()[:2]) if request.user.get_full_name() else request.user.email[0].upper()
+    display_name = request.user.get_full_name().strip()
+    initials = "".join(part[0].upper() for part in display_name.split()[:2])
+    if not initials:
+        initials = (request.user.email or request.user.username or "U")[0].upper()
 
     return render(
         request,
@@ -1003,7 +1132,7 @@ def profile(request):
         {
             "profile_obj": profile_obj,
             "selling_products": selling_products,
-            "buying_products": buying_products,
+            "purchases": purchases,
             "profile_initials": initials,
         },
     )

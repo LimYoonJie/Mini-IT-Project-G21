@@ -7,7 +7,17 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
 from django.urls import reverse
 
-from .models import MarketplaceOrder, MarketplaceOrderItem, Product, ProductReview, Purchase, ReviewHelpfulVote
+from .models import (
+    ChatMessage,
+    Favorite,
+    ListingReport,
+    MarketplaceOrder,
+    MarketplaceOrderItem,
+    Product,
+    ProductReview,
+    Purchase,
+    ReviewHelpfulVote,
+)
 
 User = get_user_model()
 
@@ -153,6 +163,7 @@ class StripeCheckoutTests(TestCase):
         order.refresh_from_db()
         self.assertEqual(order.status, MarketplaceOrder.Status.PAID)
         self.assertIsNotNone(order.paid_at)
+        self.assertEqual(Purchase.objects.filter(buyer=self.user, product=self.product).count(), 1)
 
     @override_settings(STRIPE_WEBHOOK_SECRET="whsec_demo")
     @patch("marketplace.views.stripe.Webhook.construct_event")
@@ -195,6 +206,129 @@ class StripeCheckoutTests(TestCase):
         self.product.refresh_from_db()
         self.assertEqual(order.status, MarketplaceOrder.Status.CANCELLED)
         self.assertEqual(self.product.stock, 1)
+
+
+class MarketplaceWorkflowTests(TestCase):
+    def setUp(self):
+        self.buyer = User.objects.create_user(username="buyer-workflow", password="Password123")
+        self.seller = User.objects.create_user(username="seller-workflow", password="Password123")
+        self.other_seller = User.objects.create_user(username="other-seller", password="Password123")
+        self.product = Product.objects.create(
+            name="Used keyboard",
+            category="Electronics",
+            price=Decimal("30.00"),
+            stock=2,
+            seller=self.seller,
+        )
+
+    def test_paid_order_history_and_review_eligibility_are_persistent(self):
+        order = MarketplaceOrder.objects.create(
+            buyer=self.buyer,
+            total=Decimal("30.00"),
+            status=MarketplaceOrder.Status.PAID,
+        )
+        item = MarketplaceOrderItem.objects.create(
+            order=order,
+            product=self.product,
+            product_name=self.product.name,
+            unit_price=self.product.price,
+            quantity=1,
+            fulfillment_status=MarketplaceOrderItem.FulfillmentStatus.PROCESSING,
+        )
+        Purchase.objects.create(
+            buyer=self.buyer,
+            product=self.product,
+            order_item=item,
+            price=item.unit_price,
+        )
+        self.client.login(username=self.buyer.username, password="Password123")
+
+        response = self.client.get(reverse("profile"))
+        orders_response = self.client.get(reverse("order_history"))
+        detail_response = self.client.get(reverse("product_detail", args=[self.product.id]))
+
+        self.assertContains(response, self.product.name)
+        self.assertContains(orders_response, "Order #")
+        self.assertContains(detail_response, "Post review")
+
+    def test_seller_can_reply_only_to_existing_buyer_conversation(self):
+        ChatMessage.objects.create(
+            product=self.product,
+            buyer=self.buyer,
+            seller=self.seller,
+            sender=self.buyer,
+            message="Is this available?",
+        )
+        self.client.login(username=self.seller.username, password="Password123")
+
+        inbox_response = self.client.get(reverse("seller_inbox"))
+        chat_url = reverse("product_chat", args=[self.product.id]) + f"?buyer={self.buyer.id}"
+        chat_response = self.client.post(chat_url, {"buyer": self.buyer.id, "message": "Yes, it is."})
+
+        self.assertContains(inbox_response, "Is this available?")
+        self.assertEqual(chat_response.status_code, 302)
+        reply = ChatMessage.objects.get(message="Yes, it is.")
+        self.assertEqual(reply.sender, self.seller)
+        self.assertEqual(reply.buyer, self.buyer)
+
+    def test_other_account_cannot_read_private_conversation(self):
+        ChatMessage.objects.create(
+            product=self.product,
+            buyer=self.buyer,
+            seller=self.seller,
+            sender=self.buyer,
+            message="Private question",
+        )
+        self.client.login(username=self.other_seller.username, password="Password123")
+
+        response = self.client.get(
+            reverse("product_chat", args=[self.product.id]),
+            {"buyer": self.buyer.id},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, "Private question")
+
+    def test_favorite_toggle_is_persistent_and_unique(self):
+        self.client.login(username=self.buyer.username, password="Password123")
+        url = reverse("toggle_favorite", args=[self.product.id])
+
+        self.client.post(url)
+        self.client.post(url)
+        self.assertFalse(Favorite.objects.filter(user=self.buyer, product=self.product).exists())
+        self.client.post(url)
+        self.assertContains(self.client.get(reverse("wishlist")), self.product.name)
+
+    def test_seller_can_advance_only_owned_paid_order_fulfillment(self):
+        order = MarketplaceOrder.objects.create(
+            buyer=self.buyer,
+            total=Decimal("30.00"),
+            status=MarketplaceOrder.Status.PAID,
+        )
+        item = MarketplaceOrderItem.objects.create(
+            order=order,
+            product=self.product,
+            product_name=self.product.name,
+            unit_price=self.product.price,
+            fulfillment_status=MarketplaceOrderItem.FulfillmentStatus.PROCESSING,
+        )
+        self.client.login(username=self.seller.username, password="Password123")
+
+        response = self.client.post(
+            reverse("update_fulfillment", args=[item.id]),
+            {"status": MarketplaceOrderItem.FulfillmentStatus.SHIPPED},
+        )
+
+        item.refresh_from_db()
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(item.fulfillment_status, MarketplaceOrderItem.FulfillmentStatus.SHIPPED)
+
+    def test_report_status_change_records_review_timestamp(self):
+        report = ListingReport.objects.create(product=self.product, reason="suspicious")
+        report.status = ListingReport.Status.RESOLVED
+        report.save()
+
+        self.assertIsNotNone(report.reviewed_at)
 
 
 class ProductReviewTests(TestCase):
