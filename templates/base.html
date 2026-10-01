@@ -27,7 +27,7 @@
 
     <link
         rel="stylesheet"
-        href="{% static 'css/main.css' %}?v=8"
+        href="{% static 'css/main.css' %}?v=9"
     >
 
     <link
@@ -39,7 +39,7 @@
 </head>
 
 
-<body>
+<body class="site-body">
 
 <header class="navbar">
 
@@ -107,7 +107,7 @@
 </div>
 
 
-<main>
+<main class="site-main">
 
     {% if messages %}
         <div class="messages">
@@ -117,8 +117,10 @@
         </div>
     {% endif %}
 
-    {% block content %}
-    {% endblock %}
+    <div class="page-content">
+        {% block content %}
+        {% endblock %}
+    </div>
 
 </main>
 

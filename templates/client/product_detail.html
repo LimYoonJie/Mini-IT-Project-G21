@@ -9,12 +9,14 @@
 <div class="product-detail">
 
     <div class="product-detail-image">
-
+        {% if product.image %}
         <img
-            src="{{ product.image }}"
+            src="{{ product.image.url }}"
             alt="{{ product.name }}"
         >
-
+        {% else %}
+        <div class="product-detail-placeholder">No image available</div>
+        {% endif %}
     </div>
 
 
@@ -87,7 +89,9 @@
 
     </div>
 
-        {% include "client/report_listing.html" with product=product %}
+        <div class="product-detail-report">
+            {% include "client/report_listing.html" with product=product %}
+        </div>
 
 </div>
 

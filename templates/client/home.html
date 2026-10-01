@@ -31,11 +31,11 @@ Home | MMU Second-Hand Marketplace
 
         <div class="product-card">
 
-            <img
-                src="{{ product.image }}"
-                alt="{{ product.name }}"
-                class="product-image"
-            >
+            {% if product.image %}
+                <img src="{{ product.image.url }}" alt="{{ product.name }}" class="product-image">
+            {% else %}
+                <div class="product-image image-placeholder" role="img" aria-label="No image for {{ product.name }}">No image</div>
+            {% endif %}
 
             <div class="product-info">
 

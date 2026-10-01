@@ -5,14 +5,18 @@ Cart | MMU Second-Hand Marketplace
 {% endblock %}
 
 {% block content %}
-
+<section class="cart-page">
 <h1>Your Cart</h1>
 
 {% if cart_items %}
 <div class="cart-list">
     {% for item in cart_items %}
     <article class="cart-item">
-        <img src="{{ item.product.image }}" alt="{{ item.product.name }}" class="cart-item-image">
+        {% if item.product.image %}
+            <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="cart-item-image">
+        {% else %}
+            <div class="cart-item-image image-placeholder" role="img" aria-label="No image for {{ item.product.name }}">No image</div>
+        {% endif %}
         <div class="cart-item-info">
             <h2>{{ item.product.name }}</h2>
             <p>RM {{ item.product.price|floatformat:2 }}</p>
@@ -36,5 +40,5 @@ Cart | MMU Second-Hand Marketplace
 <a href="{% url 'product_list' %}" class="btn btn-primary">
     Continue Shopping
 </a>
-
+</section>
 {% endblock %}
