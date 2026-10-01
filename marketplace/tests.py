@@ -2,6 +2,7 @@ from decimal import Decimal
 from types import SimpleNamespace
 from unittest.mock import patch
 
+from django import forms
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
@@ -73,6 +74,44 @@ class ProfilePageTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Used Chair")
+
+
+class ProductAdminCategoryTests(TestCase):
+    def setUp(self):
+        self.admin_user = User.objects.create_superuser(
+            username="product-admin",
+            email="admin@student.mmu.edu.my",
+            password="Password123",
+        )
+        self.client.force_login(self.admin_user)
+
+    def test_add_product_category_is_a_dropdown_of_store_categories(self):
+        response = self.client.get(reverse("admin:marketplace_product_add"))
+
+        self.assertEqual(response.status_code, 200)
+        category_field = response.context["adminform"].form.fields["category"]
+        category_values = {
+            value
+            for group, options in category_field.choices
+            if isinstance(options, list)
+            for value, label in options
+        }
+        self.assertIsInstance(category_field.widget, forms.Select)
+        self.assertIn("📱 Phones", category_values)
+        self.assertIn("🎓 Other Education", category_values)
+
+    def test_existing_category_remains_available_when_editing_product(self):
+        product = Product.objects.create(
+            name="Legacy category listing",
+            category="Electronics",
+            price=Decimal("10.00"),
+            stock=1,
+        )
+
+        response = self.client.get(reverse("admin:marketplace_product_change", args=[product.id]))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, 'value="Electronics"', html=False)
 
 
 class StripeCheckoutTests(TestCase):

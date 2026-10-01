@@ -1,10 +1,13 @@
 from django.contrib import admin
+
+from .forms import ProductAdminForm
 from .models import ListingReport, Product, ProductReview, Purchase, ReviewAttachment, ReviewHelpfulVote
 from .models import MarketplaceOrder, MarketplaceOrderItem
 
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
+    form = ProductAdminForm
     list_display = ("id", "name", "category", "price", "stock")
     search_fields = ("name", "category")
 

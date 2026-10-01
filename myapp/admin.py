@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.models import User
+from marketplace.forms import ProductAdminForm
 from marketplace.models import Product
 from .models import Order
 
@@ -27,6 +28,7 @@ except admin.sites.NotRegistered:
 
 @admin.register(Product)
 class ProductManagementAdmin(admin.ModelAdmin):
+    form = ProductAdminForm
     list_display = ('id', 'name', 'category', 'price', 'stock')
     list_filter = ('category',)
     search_fields = ('name', 'category')
