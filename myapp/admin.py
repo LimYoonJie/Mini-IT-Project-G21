@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from marketplace.forms import ProductAdminForm
 from marketplace.models import Product
 from .models import Order
+from django.shortcuts import redirect
 
 # Admin site header
 admin.site.site_header = 'MMU Second-hand Marketplace Admin'
@@ -29,9 +30,7 @@ class CustomUserAdmin(admin.ModelAdmin):
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         
-        return qs.filter(is_superuser=False, is_staff=False)
-
-
+        return qs
 
     def ban_users(self, request, queryset):
         queryset.update(is_active=False)

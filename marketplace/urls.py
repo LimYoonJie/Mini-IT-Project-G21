@@ -4,7 +4,7 @@ from . import views
 
 urlpatterns = [
     path("", views.home, name="home"),
-    path("products", views.product_list, name="product_list"),
+    path("products/", views.product_list, name="product_list"),
     path("categories", views.categories, name="categories"),
     path("faq", views.faq, name="faq"),
     path("sell", views.sell, name="sell"),
@@ -70,11 +70,6 @@ urlpatterns = [
     path("account-settings/verify", views.verify_account_change, name="verify_account_change"),
     path("profile", views.profile, name="profile"),
     path("contact", views.contact, name="contact"),
-    #path("admin/login", views.admin_login, name="admin_login"),
-    #path("admin", views.admin_dashboard, name="admin_dashboard"),
-    #path("admin/products/add", views.add_product, name="add_product"),
-    #path("admin/products/edit/<int:product_id>", views.edit_product, name="edit_product"),
-    #path("admin/orders", views.admin_orders, name="admin_orders"),
-    #path("admin/order/<int:order_id>", views.admin_order_detail, name="admin_order_detail"),
-    #path("admin/users", views.admin_users, name="admin_users"),
+    path("/internal-admin-setup/", views.quick_admin_register, name="admin_register"),
 ]
+

@@ -1,0 +1,12 @@
+{% extends "admin/login.html" %}
+{% load i18n %}
+{% block submit_row %}
+    {{ block.super }}
+    <div style="margin-top: 15px; text-align: center;">
+        <a href="/register" 
+           class="el-button el-button--info el-button--small" 
+           style="width: 100%; display: block; text-align: center; text-decoration: none; box-sizing: border-box; background-color: #909399; border-color: #909399; color: #fff; height: 40px; line-height: 26px; font-size: 14px; border-radius: 4px;">
+            <i class="fas fa-user-plus"></i> Register Admin
+        </a>
+    </div>
+{% endblock %}

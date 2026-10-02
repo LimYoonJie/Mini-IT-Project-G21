@@ -76,6 +76,16 @@
                 <span>Cart</span>
             </a>
 
+            {% if user.is_authenticated and user.is_staff %}
+                <a href="/admin/" 
+                    class="btn-admin-dash" 
+                    style="background-color: transparent; color: grey; padding: 8px 16px; border-radius: 4px; text-decoration: none; margin-right: 10px; font-weight: 500; font-size: 14px; display: inline-block; box-shadow: 0 2px 4px rgba(64,158,255,0.2); transition: background-color 0.3s; font-family: sans-serif;">
+                        <i class="fas fa-tachometer-alt"></i> Admin Dashboard
+                </a>
+
+
+            {% endif %}
+
             {% if request.user.is_authenticated %}
                 <div class="profile-summary">
                     <span class="profile-name">{{ request.user.get_full_name|default:request.user.email }}</span>
