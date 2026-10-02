@@ -111,11 +111,10 @@ MARKETPLACE_SUPPORT_EMAIL = os.environ.get(
     "MARKETPLACE_SUPPORT_EMAIL",
     "mmusecondhandmarketplace@gmail.com",
 )
-EMAIL_BACKEND = os.environ.get(
-    "EMAIL_BACKEND",
+EMAIL_BACKEND = os.environ.get("EMAIL_BACKEND") or (
     "django.core.mail.backends.smtp.EmailBackend"
-    if EMAIL_HOST and EMAIL_HOST_USER and EMAIL_HOST_PASSWORD
-    else "django.core.mail.backends.console.EmailBackend",
+    if not DEBUG or (EMAIL_HOST and EMAIL_HOST_USER and EMAIL_HOST_PASSWORD)
+    else "django.core.mail.backends.console.EmailBackend"
 )
 
 

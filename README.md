@@ -53,7 +53,17 @@ limits can change; check its current [pricing page](https://www.pythonanywhere.c
 	DJANGO_CSRF_TRUSTED_ORIGINS=https://<your-username>.pythonanywhere.com
 	STRIPE_SECRET_KEY=<Stripe test secret key>
 	STRIPE_WEBHOOK_SECRET=<Stripe webhook signing secret>
+	EMAIL_HOST=smtp.gmail.com
+	EMAIL_PORT=587
+	EMAIL_USE_TLS=True
+	EMAIL_HOST_USER=<your-sending-account@gmail.com>
+	EMAIL_HOST_PASSWORD=<your-gmail-app-password>
+	DEFAULT_FROM_EMAIL=<your-sending-account@gmail.com>
 	```
+
+	Use a Gmail app password, not your regular account password. Set the sender
+	address to the authenticated Gmail account. If using another SMTP provider,
+	use its host, port, TLS settings, and authorized sender address.
 
 5. In a Bash console, run `python manage.py migrate` and
 	`python manage.py collectstatic --noinput`. Configure the Web tab's static
