@@ -1,0 +1,130 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block content %}
+<div style="padding: 20px; font-family: Arial, sans-serif; background-color: #f5f7f9; min-height: 100vh;">
+    
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+        <h2 style="margin: 0; font-size: 18px; color: #333;">Order Management</h2>
+        <a href="/admin/" style="background: #909399; color: #fff; padding: 6px 12px; text-decoration: none; border-radius: 4px; font-size: 13px;">
+            ← Back to Dashboard
+        </a>
+    </div>
+
+    <div style="background: #fff; padding: 15px 20px; border-radius: 4px; border: 1px solid #e6e6e6; margin-bottom: 15px;">
+        <form method="GET" action="" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 0;">
+            <select name="status" style="padding: 8px 12px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 13px; width: 140px; background-color: #fff; outline: none;">
+                <option value="">Status</option>
+                <option value="completed" {% if request.GET.status == 'completed' %}selected{% endif %}>Completed</option>
+                <option value="pending" {% if request.GET.status == 'pending' %}selected{% endif %}>Pending</option>
+                <option value="cancelled" {% if request.GET.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+            </select>
+            
+            <div style="display: flex; align-items: center; gap: 5px; font-size: 13px; color: #606266;">
+                <span>Order Time:</span>
+                <input type="date" name="start_time" value="{{ request.GET.start_time|default:'' }}" style="padding: 6px 10px; border: 1px solid #dcdfe6; border-radius: 4px; outline: none;">
+                <span>-</span>
+                <input type="date" name="end_time" value="{{ request.GET.end_time|default:'' }}" style="padding: 6px 10px; border: 1px solid #dcdfe6; border-radius: 4px; outline: none;">
+            </div>
+            
+            <button type="submit" style="background: #409EFF; color: #fff; border: none; padding: 8px 16px; border-radius: 4px; font-size: 13px; cursor: pointer; font-weight: 500;">Search</button>
+        </form>
+    </div>
+
+    <form id="orderBatchForm" method="POST" action="">
+        {% csrf_token %}
+        <input type="hidden" name="action" id="batchActionInput" value="">
+
+        <div style="background: #fff; padding: 15px 20px; border-radius: 4px; border: 1px solid #e6e6e6; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <button type="button" onclick="submitBatch('completed')" style="background-color: #409EFF; color: #fff; border: none; padding: 8px 14px; border-radius: 4px; font-size: 13px; cursor: pointer; font-weight: 500;">
+                    Mark selected orders as Completed
+                </button>
+                <button type="button" onclick="submitBatch('cancelled')" style="background-color: #E6A23C; color: #fff; border: none; padding: 8px 14px; border-radius: 4px; font-size: 13px; cursor: pointer; font-weight: 500;">
+                    Mark selected orders as Cancelled
+                </button>
+                <button type="button" onclick="submitBatch('delete')" style="background-color: #F56C6C; color: #fff; border: none; padding: 8px 14px; border-radius: 4px; font-size: 13px; cursor: pointer; font-weight: 500;">
+                    Delete Selected
+                </button>
+            </div>
+        
+        </div>
+
+        <div style="background: #fff; padding: 15px; border-radius: 4px; border: 1px solid #e6e6e6;">
+            <style>
+                .order-row-white { background-color: #fff; }
+                .order-row-gray { background-color: #fafafa; }
+            </style>
+            <table style="width: 100%; border-collapse: collapse; font-size: 14px; color: #606266;">
+                <thead>
+                    <tr style="background-color: #2b3643; color: #fff; text-align: left;">
+                        <th style="padding: 12px; border: 1px solid #e6e6e6; width: 40px; text-align: center;">
+                            <input type="checkbox" id="checkAllOrders" onclick="toggleSelectAll(this)">
+                        </th>
+                        <th style="padding: 12px; border: 1px solid #e6e6e6; width: 80px; text-align: center;">ID</th>
+                        <th style="padding: 12px; border: 1px solid #e6e6e6;">BUYER</th>
+                        <th style="padding: 12px; border: 1px solid #e6e6e6;">PRODUCT</th>
+                        <th style="padding: 12px; border: 1px solid #e6e6e6; text-align: right; width: 140px;">FINAL PRICE</th>
+                        <th style="padding: 12px; border: 1px solid #e6e6e6; text-align: center; width: 120px;">STATUS</th>
+                        <th style="padding: 12px; border: 1px solid #e6e6e6; width: 180px;">ORDER TIME</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for o in orders %}
+                    <tr class="{% cycle 'order-row-white' 'order-row-gray' %}">
+                        <td style="padding: 12px; border: 1px solid #e6e6e6; text-align: center;">
+                            <input type="checkbox" name="selected_orders" value="{{ o.id }}" class="order-item-checkbox">
+                        </td>
+                        <td style="padding: 12px; border: 1px solid #e6e6e6; text-align: center;">{{ o.id }}</td>
+                        <td style="padding: 12px; border: 1px solid #e6e6e6;">{{ o.buyer.username|default:o.user.username }}</td>
+                        <td style="padding: 12px; border: 1px solid #e6e6e6; font-weight: bold; color: #409EFF;">{{ o.product.name }}</td>
+                        <td style="padding: 12px; border: 1px solid #e6e6e6; color: #ff4949; font-weight: bold; text-align: right;">RM {{ o.price }}</td>
+                        <td style="padding: 12px; border: 1px solid #e6e6e6; text-align: center;">
+                            {% if o.status == 'completed' %}
+                                <span style="background-color: #f0f9eb; color: #67c23a; padding: 4px 8px; border-radius: 4px; font-size: 12px; border: 1px solid #e1f3d8;">COMPLETED</span>
+                            {% elif o.status == 'cancelled' %}
+                                <span style="background-color: #fef0f0; color: #f56c6c; padding: 4px 8px; border-radius: 4px; font-size: 12px; border: 1px solid #fde2e2;">CANCELLED</span>
+                            {% else %}
+                                <span style="background-color: #fdf6ec; color: #e6a23c; padding: 4px 8px; border-radius: 4px; font-size: 12px; border: 1px solid #faecd8;">{{ o.status|upper|default:"PENDING" }}</span>
+                            {% endif %}
+                        </td>
+                        <td style="padding: 12px; border: 1px solid #e6e6e6; font-size: 13px; color: #909399;">{{ o.created_at|date:"Y-m-d H:i"|default:"2026-10-04 21:20" }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" style="padding: 30px; text-align: center; color: #999;">No customer orders found in database.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </form>
+</div>
+
+<script type="text/javascript">
+    function toggleSelectAll(master) {
+        var checkboxes = document.getElementsByClassName('order-item-checkbox');
+        for (var i = 0; i < checkboxes.length; i++) {
+            checkboxes[i].checked = master.checked;
+        }
+    }
+    
+    function submitBatch(actionType) {
+        var checkboxes = document.getElementsByClassName('order-item-checkbox');
+        var anyChecked = false;
+        for (var i = 0; i < checkboxes.length; i++) {
+            if (checkboxes[i].checked) { anyChecked = true; break; }
+        }
+        
+        if (!anyChecked) {
+            alert("Please select at least one order first!");
+            return;
+        }
+        
+        if (confirm("Are you sure to execute this batch action on selected orders?")) {
+            document.getElementById('batchActionInput').value = actionType;
+            document.getElementById('orderBatchForm').submit();
+        }
+    }
+</script>
+{% endblock %}

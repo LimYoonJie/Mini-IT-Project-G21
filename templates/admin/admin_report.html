@@ -1,0 +1,109 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block content %}
+<div style="padding: 20px; font-family: Arial, sans-serif; background-color: #f5f7f9; min-height: 100vh;">
+    
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+        <h2 style="margin: 0; font-size: 18px; color: #333;">Report Management</h2>
+        <a href="/admin/" style="background: #909399; color: #fff; padding: 6px 12px; text-decoration: none; border-radius: 4px; font-size: 13px;">
+            ← Back to Dashboard
+        </a>
+    </div>
+
+    <div style="background: #fff; padding: 15px 20px; border-radius: 4px; border: 1px solid #e6e6e6; margin-bottom: 15px;">
+        <form method="GET" action="" style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: 0;">
+            <input type="text" name="q" placeholder="Search name, details, email" value="{{ request.GET.q|default:'' }}" style="padding: 8px 12px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 13px; width: 200px; outline: none;">
+            
+            <select name="status" style="padding: 8px 12px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 13px; width: 120px; background-color: #fff; outline: none;">
+                <option value="">status</option>
+                <option value="Open" {% if request.GET.status == 'Open' %}selected{% endif %}>Open</option>
+                <option value="Reviewing" {% if request.GET.status == 'Reviewing' %}selected{% endif %}>Reviewing</option>
+                <option value="Resolved" {% if request.GET.status == 'Resolved' %}selected{% endif %}>Resolved</option>
+                <option value="Dismissed" {% if request.GET.status == 'Dismissed' %}selected{% endif %}>Dismissed</option>
+            </select>
+            
+            <select name="reason" style="padding: 8px 12px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 13px; width: 160px; background-color: #fff; outline: none;">
+                <option value="">reason</option>
+                <option value="Offensive behavior/content" {% if request.GET.reason == 'Offensive behavior/content' %}selected{% endif %}>Offensive behavior/content</option>
+                <option value="Suspicious account" {% if request.GET.reason == 'Suspicious account' %}selected{% endif %}>Suspicious account</option>
+                <option value="Selling counterfeit items" {% if request.GET.reason == 'Selling counterfeit items' %}selected{% endif %}>Selling counterfeit items</option>
+                <option value="Duplicate posts" {% if request.GET.reason == 'Duplicate posts' %}selected{% endif %}>Duplicate posts</option>
+                <option value="Selling prohibited item" {% if request.GET.reason == 'Selling prohibited item' %}selected{% endif %}>Selling prohibited item</option>
+                <option value="Mispriced listing" {% if request.GET.reason == 'Mispriced listing' %}selected{% endif %}>Mispriced listing</option>
+                <option value="Item wrongly categorized" {% if request.GET.reason == 'Item wrongly categorized' %}selected{% endif %}>Item wrongly categorized</option>
+                <option value="Other" {% if request.GET.reason == 'Other' %}selected{% endif %}>Other</option>
+            </select>
+        
+            <div style="display: flex; align-items: center; gap: 5px; font-size: 13px; color: #606266;">
+                <span>created at:</span>
+                <input type="date" name="start_date" value="{{ request.GET.start_date|default:'' }}" style="padding: 6px 10px; border: 1px solid #dcdfe6; border-radius: 4px; outline: none;">
+                <span>-</span>
+                <input type="date" name="end_date" value="{{ request.GET.end_date|default:'' }}" style="padding: 6px 10px; border: 1px solid #dcdfe6; border-radius: 4px; outline: none;">
+            </div>
+            
+            <button type="submit" style="background: #409EFF; color: #fff; border: none; padding: 8px 16px; border-radius: 4px; font-size: 13px; cursor: pointer; font-weight: 500;">Search</button>
+        </form>
+    </div>
+
+    <div style="background: #fff; padding: 15px; border-radius: 4px; border: 1px solid #e6e6e6;">
+        <style>
+            .report-row { background-color: #fff; }
+            .report-row--alternate { background-color: #fafafa; }
+        </style>
+        <table style="width: 100%; border-collapse: collapse; font-size: 14px; color: #606266;">
+            <thead>
+                <tr style="background-color: #2b3643; color: #fff; text-align: left;">
+                    <th style="padding: 12px; border: 1px solid #e6e6e6; width: 40px; text-align: center;">ID</th>
+                    <th style="padding: 12px; border: 1px solid #e6e6e6;">PRODUCT</th>
+                    <th style="padding: 12px; border: 1px solid #e6e6e6;">REASON</th>
+                    <th style="padding: 12px; border: 1px solid #e6e6e6;">REPORTER</th>
+                    <th style="padding: 12px; border: 1px solid #e6e6e6; width: 140px;">STATUS</th>
+                    <th style="padding: 12px; border: 1px solid #e6e6e6;">CREATED AT</th>
+                    <th style="padding: 12px; border: 1px solid #e6e6e6; text-align: center; width: 140px;">ACTIONS</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in reports %}
+                <tr class="{% cycle 'report-row' 'report-row--alternate' %}">
+                    <form method="POST" action="/backend-complaint-list/save/{{ r.id }}/">
+                        {% csrf_token %}
+                        <td style="padding: 12px; border: 1px solid #e6e6e6; text-align: center;">{{ r.id }}</td>
+                        <td style="padding: 12px; border: 1px solid #e6e6e6; font-weight: bold; color: #409EFF;">{{ r.product.name|default:"Marketplace Item" }}</td>
+                        <td style="padding: 12px; border: 1px solid #e6e6e6;">{{ r.reason }}</td>
+                        <td style="padding: 12px; border: 1px solid #e6e6e6; font-size: 13px;">{{ r.reporter.username }}</td>
+                        
+                        <td style="padding: 8px; border: 1px solid #e6e6e6;">
+                            <select name="status" style="padding: 6px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 13px; width: 100%; outline: none; background: #fff; cursor: pointer;">
+                                <option value="Open" {% if r.status == 'Open' %}selected{% endif %}>Open</option>
+                                <option value="Reviewing" {% if r.status == 'Reviewing' %}selected{% endif %}>Reviewing</option>
+                                <option value="Resolved" {% if r.status == 'Resolved' %}selected{% endif %}>Resolved</option>
+                                <option value="Dismissed" {% if r.status == 'Dismissed' %}selected{% endif %}>Dismissed</option>
+                            </select>
+                        </td>
+                        
+                        <td style="padding: 12px; border: 1px solid #e6e6e6; font-size: 13px; color: #909399;">{{ r.created_at|date:"M. d, Y, g:i a." }}</td>
+                        
+                        <td style="padding: 12px; border: 1px solid #e6e6e6; text-align: center; display: flex; gap: 8px; justify-content: center; align-items: center;">
+                            <button type="submit" style="background-color: #67C23A; color: #fff; border: none; padding: 5px 12px; border-radius: 4px; font-size: 12px; font-weight: bold; cursor: pointer;">
+                                <i class="el-icon-check"></i> Save
+                            </button>
+                            <a href="/admin/marketplace/listingreport/{{ r.id }}/delete/" 
+                               onclick="return confirm('Are you sure to delete this report?')"
+                               style="background-color: #F56C6C; color: #fff; padding: 5px 12px; text-decoration: none; border-radius: 4px; font-size: 12px; font-weight: bold; display: inline-block;">
+                               Delete
+                            </a>
+                        </td>
+                    </form>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" style="padding: 30px; text-align: center; color: #999;">No active marketplace listing reports found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+{% endblock %}

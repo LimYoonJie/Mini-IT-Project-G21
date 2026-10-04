@@ -1,0 +1,90 @@
+.admin-navbar {
+    background: #222;
+    padding: 20px;
+}
+
+.admin-navbar-inner {
+    max-width: 1200px;
+    margin: auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.admin-navbar a {
+    color: white;
+    text-decoration: none;
+    margin-right: 20px;
+}
+
+.admin-content {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+.admin-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.admin-card {
+    padding: 25px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+}
+
+.admin-page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.admin-product-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.admin-product {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+}
+
+.admin-product img {
+    width: 100px;
+    height: 100px;
+    object-fit: cover;
+}
+
+.admin-product-actions {
+    margin-left: auto;
+}
+
+.product-form {
+    max-width: 600px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.product-form input,
+.product-form textarea {
+    padding: 10px;
+    margin-bottom: 15px;
+}
+
+.btn {
+    display: inline-block;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 6px;
+    text-decoration: none;
+    cursor: pointer;
+}

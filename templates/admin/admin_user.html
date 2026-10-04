@@ -1,0 +1,103 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block content %}
+<div style="padding: 20px; font-family: Arial, sans-serif; background-color: #f5f7f9; min-height: 100vh;">
+    
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+        <h2 style="margin: 0; font-size: 18px; color: #333;">User Account Management</h2>
+        <a href="/admin/" style="background: #909399; color: #fff; padding: 6px 12px; text-decoration: none; border-radius: 4px; font-size: 13px;">
+            ← Back to Dashboard
+        </a>
+    </div>
+
+    <div style="background: #fff; padding: 15px 20px; border-radius: 4px; border: 1px solid #e6e6e6; margin-bottom: 15px;">
+        <form method="GET" action="" style="display: flex; gap: 10px; align-items: center; margin: 0;">
+            <input type="text" name="q" placeholder="Search username..." value="{{ request.GET.q|default:'' }}" style="padding: 8px 12px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 13px; width: 200px; outline: none;">
+            <select name="status" style="padding: 8px 12px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 13px; width: 140px; background-color: #fff; outline: none;">
+                <option value="">All Status</option>
+                <option value="active" {% if request.GET.status == 'active' %}selected{% endif %}>Active</option>
+                <option value="banned" {% if request.GET.status == 'banned' %}selected{% endif %}>Banned</option>
+            </select>
+            <button type="submit" style="background: #409EFF; color: #fff; border: none; padding: 8px 16px; border-radius: 4px; font-size: 13px; cursor: pointer; font-weight: 500;">Search</button>
+        </form>
+    </div>
+
+    <form id="userBatchForm" method="POST" action="">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="delete">
+
+        <div style="background: #fff; padding: 15px 20px; border-radius: 4px; border: 1px solid #e6e6e6; margin-bottom: 15px;">
+            <button type="button" onclick="submitUserBatch()" style="background-color: #F56C6C; color: #fff; border: none; padding: 8px 14px; border-radius: 4px; font-size: 13px; cursor: pointer; font-weight: 500;">
+                Delete Selected Users
+            </button>
+        </div>
+
+        <div style="background: #fff; padding: 15px; border-radius: 4px; border: 1px solid #e6e6e6;">
+            <style>
+                .user-row:nth-child(even) { background-color: #fafafa; }
+            </style>
+            <table style="width: 100%; border-collapse: collapse; font-size: 14px; color: #606266;">
+                <thead>
+                    <tr style="background-color: #2b3643; color: #fff; text-align: left;">
+                        <th style="padding: 12px; border: 1px solid #e6e6e6; width: 40px; text-align: center;">
+                            <input type="checkbox" onclick="toggleSelectAllUsers(this)">
+                        </th>
+                        <th style="padding: 12px; border: 1px solid #e6e6e6; width: 80px; text-align: center;">USER ID</th>
+                        <th style="padding: 12px; border: 1px solid #e6e6e6;">USERNAME</th>
+                        <th style="padding: 12px; border: 1px solid #e6e6e6;">EMAIL ADDRESS</th>
+                        <th style="padding: 12px; border: 1px solid #e6e6e6; width: 120px;">STATUS</th>
+                        <th style="padding: 12px; border: 1px solid #e6e6e6; text-align: center; width: 100px;">ACTIONS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for u in users %}
+                    <tr class="user-row">
+                        <td style="padding: 12px; border: 1px solid #e6e6e6; text-align: center;">
+                            <input type="checkbox" name="selected_users" value="{{ u.id }}" class="user-item-checkbox">
+                        </td>
+                        <td style="padding: 12px; border: 1px solid #e6e6e6; text-align: center;">{{ u.id }}</td>
+                        <td style="padding: 12px; border: 1px solid #e6e6e6; font-weight: bold; color: #409EFF;">{{ u.username }}</td>
+                        <td style="padding: 12px; border: 1px solid #e6e6e6;">{{ u.email }}</td>
+                        <td style="padding: 12px; border: 1px solid #e6e6e6;">
+                            {% if u.is_active %}
+                            <span style="background-color: #f0f9eb; color: #67c23a; padding: 4px 8px; border-radius: 4px; font-size: 12px; border: 1px solid #e1f3d8;">ACTIVE</span>
+                            {% else %}
+                            <span style="background-color: #fef0f0; color: #f56c6c; padding: 4px 8px; border-radius: 4px; font-size: 12px; border: 1px solid #fde2e2;">BANNED</span>
+                            {% endif %}
+                        </td>
+                        <td style="padding: 12px; border: 1px solid #e6e6e6; text-align: center;">
+                            {% if u.is_active %}
+                                <a href="/backend-member-list/ban/{{ u.id }}/" onclick="return confirm('Ban this user?')" style="color: #F56C6C; text-decoration: none; font-weight: bold; font-size: 13px;">Ban</a>
+                            {% else %}
+                                <a href="/backend-member-list/unban/{{ u.id }}/" style="color: #67C23A; text-decoration: none; font-weight: bold; font-size: 13px;">Unban</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" style="padding: 20px; text-align: center; color: #999;">No users found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </form>
+</div>
+
+<script type="text/javascript">
+    function toggleSelectAllUsers(master) {
+        var checkboxes = document.getElementsByClassName('user-item-checkbox');
+        for (var i = 0; i < checkboxes.length; i++) { checkboxes[i].checked = master.checked; }
+    }
+    function submitUserBatch() {
+        var checkboxes = document.getElementsByClassName('user-item-checkbox');
+        var anyChecked = false;
+        for (var i = 0; i < checkboxes.length; i++) { if (checkboxes[i].checked) { anyChecked = true; break; } }
+        if (!anyChecked) { alert("Please select at least one user first!"); return; }
+        if (confirm("Are you sure to delete all selected users from database?")) {
+            document.getElementById('userBatchForm').submit();
+        }
+    }
+</script>
+{% endblock %}

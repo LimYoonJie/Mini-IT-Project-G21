@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+{% load i18n static %}
+<html lang="en-us">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MMU Secondhand Marketplace Admin</title>
+
+    {% block css %}
+    <link rel="stylesheet" href="{% static 'admin/theme/index.css' %}">
+    <link rel="stylesheet" href="{% static 'admin/css/base.css' %}">
+    <link rel="stylesheet" href="{% static 'admin/fontawesome-free/css/all.min.css' %}">
+    {% endblock %}
+    
+    {% block extrahead %}{% endblock %}
+</head>
+<body style="background-color: #f5f7f9; margin: 0; padding: 0;">
+
+    <div id="container">
+        {% block content %}
+        {% endblock %}
+    </div>
+
+    <script src="{% static 'admin/js/vue.min.js' %}"></script>
+    <script src="{% static 'admin/js/element-ui.js' %}"></script>
+    <script src="{% static 'admin/js/axios.min.js' %}"></script>
+
+    {% block script %}
+    {% endblock %}
+</body>
+</html>

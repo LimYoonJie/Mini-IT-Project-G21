@@ -1,0 +1,147 @@
+{% extends "admin/base.html" %}
+{% load i18n admin_urls static admin_list %}
+
+{% block content %}
+<div style="padding: 20px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f5f7f9; min-height: 100vh;">
+    
+    <!-- ==================== 1. 顶部筛选与搜索框（完全复刻线上长相） ==================== -->
+    <div style="background: #fff; padding: 15px 20px; border-radius: 4px; border: 1px solid #e6e6e6; margin-bottom: 15px; display: flex; align-items: center; gap: 15px;">
+        <!-- 调用 Django 自带的原生搜索组件 -->
+        {% block search %}{% search_form cl %}{% endblock %}
+        
+        <!-- 动态生成 Django 自带的过滤器（如 Status、Order Time 等下拉框骨架） -->
+        {% if cl.has_filters %}
+            <div style="display: flex; gap: 10px; align-items: center;" id="changelist-filter">
+                {% for spec in cl.filter_specs %}
+                    <div style="display: inline-block;">
+                        <span style="font-size: 13px; color: #909399; margin-right: 5px;">{{ spec.title }}:</span>
+                        <!-- 这里 Django 会自动渲染出下拉筛选的 A 标签或 Select，我们通过 CSS 将它们美化 -->
+                        {{ spec.choices|safe }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- 主表单卡片容器 -->
+    <div style="background: #fff; padding: 20px; border-radius: 4px; border: 1px solid #e6e6e6;">
+        
+        <!-- Django 核心批量表单开始 -->
+        <form id="changelist-form" method="post" {% if cl.formset.is_multipart %}enctype="multipart/form-data"{% endif %} novalidate>
+            {% csrf_token %}
+
+            <!-- ==================== 2. 核心：横向 Action 操作按钮一览栏（完全复刻你截图中的那一排蓝色按钮） ==================== -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; flex-wrap: wrap; gap: 10px;">
+                <div style="display: flex; align-items: center; gap: 10px;" class="actions">
+                    
+                    <!-- 🛠️ 这一句是 Django 的核心，它会自动在后端抓取你在 admin.py 里写的 Actions 下拉列表 -->
+                    <!-- 为了让它变成线上那样一排横向的蓝色精美按钮，我们在下方用 CSS 和 JS 把它强行平铺展开！ -->
+                    {% admin_actions %}
+
+                </div>
+
+                <!-- 右上角：原汁原味的那个蓝色 + Add 添加按钮 -->
+                <div>
+                    {% if has_add_permission %}
+                        {% url cl.opts|admin_urlname:'add' as add_url %}
+                        <a href="{% add_preserved_filters add_url is_popup to_field %}" 
+                           style="background-color: #409EFF; color: #fff; padding: 8px 16px; text-decoration: none; border-radius: 4px; font-size: 13px; font-weight: bold; display: inline-flex; align-items: center; gap: 5px;">
+                           <i class="el-icon-plus"></i> + Add
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- ==================== 3. 调用我们之前写好的完美高颜值数据表格本体 ==================== -->
+            {% block result_list %}
+                {% result_list cl %}
+            {% endblock %}
+
+            <!-- ==================== 4. 底部分页 ==================== -->
+            <div style="margin-top: 20px; display: flex; justify-content: flex-end;">
+                {% block pagination %}{% pagination cl %}{% endblock %}
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ==================== 5. 纯前端强行平铺美化样式（魔法部分：把原生丑下拉框强行变成 SimpleUI 同款横向蓝色按钮） ==================== -->
+<style>
+    /* 隐藏 Django 原生丑陋的 "Go" 按钮和下拉框本身 */
+    .actions select, .actions button[type="submit"] {
+        display: none !important;
+    }
+    /* 强行把原生的下拉选项，渲染成线上那种一排横向的、高大上的按钮布局 */
+    .actions .action-counter {
+        font-size: 13px;
+        color: #606266;
+        margin-left: 10px;
+        display: inline-block;
+    }
+    /* 样式注入：为自动生成的批量按钮追加 SimpleUI 风格 */
+    .custom-action-btn {
+        background-color: #409EFF;
+        color: #fff;
+        border: none;
+        padding: 8px 14px;
+        border-radius: 4px;
+        font-size: 13px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: background-color .2s;
+    }
+    .custom-action-btn:hover { background-color: #66b1ff; }
+    .custom-action-btn.danger { background-color: #F56C6C; }
+    .custom-action-btn.danger:hover { background-color: #f78989; }
+</style>
+
+<script type="text/javascript">
+    // 💡 纯前端魔法脚本：在网页加载时，自动去读取 Django 原生下拉框里的选项（Mark as Completed 等），并在页面上强行生成对应的一排按钮！
+    document.addEventListener("DOMContentLoaded", function() {
+        var selectElement = document.querySelector('select[name="action"]');
+        var actionsContainer = document.querySelector('.actions');
+        
+        if (selectElement && actionsContainer) {
+            // 循环下拉框里的所有自定义批量操作
+            var options = selectElement.options;
+            for (var i = 1; i < options.length; i++) { // 跳过第一个请选择
+                var opt = options[i];
+                
+                // 创建一个精美的横向按钮
+                var btn = document.createElement('button');
+                btn.type = "button";
+                btn.innerText = opt.text;
+                btn.className = "custom-action-btn";
+                btn.dataset.actionValue = opt.value;
+                
+                // 如果是删除按钮，换成红色的 danger 皮肤
+                if (opt.value === 'delete_selected') {
+                    btn.className = "custom-action-btn danger";
+                    btn.innerText = "Delete Selected Items";
+                }
+                
+                // 点击这个自定义按钮时，自动去同步原生表单的提交，完美实现批量修改状态！
+                btn.addEventListener('click', function() {
+                    selectElement.value = this.dataset.actionValue;
+                    // 模拟原生点击提交表单给 Django 后端处理
+                    var form = document.getElementById('changelist-form');
+                    
+                    // 弹出安全提示
+                    if (confirm("Are you sure to execute this batch action?")) {
+                        // 创建一个隐藏的提交触发表单
+                        var submitBtn = document.createElement('button');
+                        submitBtn.name = "index";
+                        submitBtn.type = "submit";
+                        submitBtn.style.display = "none";
+                        form.appendChild(submitBtn);
+                        submitBtn.click();
+                    }
+                });
+                
+                // 插入到页面中，完美替代
+                actionsContainer.insertBefore(btn, actionsContainer.firstChild);
+            }
+        }
+    });
+</script>
+{% endblock %}

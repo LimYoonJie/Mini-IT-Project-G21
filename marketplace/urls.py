@@ -71,5 +71,13 @@ urlpatterns = [
     path("profile", views.profile, name="profile"),
     path("contact", views.contact, name="contact"),
     path("/internal-admin-setup/", views.quick_admin_register, name="admin_register"),
+    path('backend-goods-list/', views.admin_product_view, name='backend_admin_products'),
+    path('backend-sales-list/', views.admin_order_view, name='backend_admin_orders'),
+    path('backend-member-list/', views.admin_user_view, name='backend_admin_users'),
+    path('backend-complaint-list/', views.admin_report_view, name='backend_admin_reports'),
+    path('backend-member-list/ban/<int:user_id>/', views.ban_user_action, name='ban_user_action'),
+    path('backend-member-list/unban/<int:user_id>/', views.unban_user_action, name='unban_user_action'),
+    path('backend-complaint-list/save/<int:report_id>/', views.save_report_status_action, name='save_report_status'),
+    path('admin/register/', views.quick_admin_register, name='quick_admin_register'),
 ]
 

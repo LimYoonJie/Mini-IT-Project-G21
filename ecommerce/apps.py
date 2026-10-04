@@ -1,6 +1,4 @@
-from simpleui.apps import SimpleApp
+from django.contrib.admin.apps import AdminConfig
 
-
-class SecureSimpleUIConfig(SimpleApp):
-    def ready(self):
-        pass
+class SecureSimpleUIConfig(AdminConfig):
+    default_site = 'django.contrib.admin.sites.AdminSite'

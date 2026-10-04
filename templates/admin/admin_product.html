@@ -1,0 +1,101 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block content %}
+<style>
+    .product-table tbody tr:nth-child(odd) { background-color: #fff; }
+    .product-table tbody tr:nth-child(even) { background-color: #fafafa; }
+</style>
+<div style="padding: 20px; font-family: Arial, sans-serif; background-color: #f5f7f9; min-height: 100vh;">
+    
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+        <h2 style="margin: 0; font-size: 18px; color: #333;">Product Management</h2>
+        <a href="/admin/" style="background: #909399; color: #fff; padding: 6px 12px; text-decoration: none; border-radius: 4px; font-size: 13px;">
+            ← Back to Dashboard
+        </a>
+    </div>
+
+    <div style="background: #fff; padding: 15px 20px; border-radius: 4px; border: 1px solid #e6e6e6; margin-bottom: 15px;">
+        <form method="GET" action="" style="display: flex; gap: 10px; align-items: center; margin: 0;">
+            <input type="text" name="q" placeholder="Search product name..." value="{{ request.GET.q|default:'' }}" style="padding: 8px 12px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 13px; width: 200px; outline: none;">
+            <select name="category" style="padding: 8px 12px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 13px; width: 140px; background-color: #fff; outline: none;">
+                <option value="">All Categories</option>
+                <option value="Stationery" {% if request.GET.category == 'Stationery' %}selected{% endif %}>Stationery</option>
+                <option value="Other Fashion" {% if request.GET.category == 'Other Fashion' %}selected{% endif %}>Other Fashion</option>
+                <option value="Textbooks" {% if request.GET.category == 'Textbooks' %}selected{% endif %}>Textbooks</option>
+                <option value="Phones" {% if request.GET.category == 'Phones' %}selected{% endif %}>Phones</option>
+            </select>
+            <button type="submit" style="background: #409EFF; color: #fff; border: none; padding: 8px 16px; border-radius: 4px; font-size: 13px; cursor: pointer; font-weight: 500;">Search</button>
+        </form>
+    </div>
+
+    <form id="productBatchForm" method="POST" action="">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="delete">
+
+        <div style="background: #fff; padding: 15px 20px; border-radius: 4px; border: 1px solid #e6e6e6; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <button type="button" onclick="submitProductBatch()" style="background-color: #F56C6C; color: #fff; border: none; padding: 8px 14px; border-radius: 4px; font-size: 13px; cursor: pointer; font-weight: 500;">
+                    Delete Selected Products
+                </button>
+            </div>
+            <div>
+                <a href="/admin/marketplace/product/add/" style="background-color: #409EFF; color: #fff; padding: 8px 16px; text-decoration: none; border-radius: 4px; font-size: 13px; font-weight: bold;">
+                    + Add Product
+                </a>
+            </div>
+        </div>
+
+        <div style="background: #fff; padding: 15px; border-radius: 4px; border: 1px solid #e6e6e6;">
+            <table class="product-table" style="width: 100%; border-collapse: collapse; font-size: 14px; color: #606266;">
+                <thead>
+                    <tr style="background-color: #2b3643; color: #fff; text-align: left;">
+                        <th style="padding: 12px; border: 1px solid #e6e6e6; width: 40px; text-align: center;">
+                            <input type="checkbox" onclick="toggleSelectAllProducts(this)">
+                        </th>
+                        <th style="padding: 12px; border: 1px solid #e6e6e6; width: 60px; text-align: center;">ID</th>
+                        <th style="padding: 12px; border: 1px solid #e6e6e6;">PRODUCT NAME</th>
+                        <th style="padding: 12px; border: 1px solid #e6e6e6;">CATEGORY</th>
+                        <th style="padding: 12px; border: 1px solid #e6e6e6; text-align: right; width: 140px;">PRICE</th>
+                        <th style="padding: 12px; border: 1px solid #e6e6e6; text-align: center; width: 100px;">STOCK</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in products %}
+                    <tr>
+                        <td style="padding: 12px; border: 1px solid #e6e6e6; text-align: center;">
+                            <input type="checkbox" name="selected_products" value="{{ p.id }}" class="product-item-checkbox">
+                        </td>
+                        <td style="padding: 12px; border: 1px solid #e6e6e6; text-align: center;">{{ p.id }}</td>
+                        <td style="padding: 12px; border: 1px solid #e6e6e6; font-weight: bold; color: #409EFF;">{{ p.name }}</td>
+                        <td style="padding: 12px; border: 1px solid #e6e6e6;">{{ p.category|default:"General" }}</td>
+                        <td style="padding: 12px; border: 1px solid #e6e6e6; color: #ff4949; font-weight: bold; text-align: right;">RM {{ p.price }}</td>
+                        <td style="padding: 12px; border: 1px solid #e6e6e6; text-align: center;">{{ p.stock }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" style="padding: 30px; text-align: center; color: #999;">No matching products found in database.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </form>
+</div>
+
+<script type="text/javascript">
+    function toggleSelectAllProducts(master) {
+        var checkboxes = document.getElementsByClassName('product-item-checkbox');
+        for (var i = 0; i < checkboxes.length; i++) { checkboxes[i].checked = master.checked; }
+    }
+    function submitProductBatch() {
+        var checkboxes = document.getElementsByClassName('product-item-checkbox');
+        var anyChecked = false;
+        for (var i = 0; i < checkboxes.length; i++) { if (checkboxes[i].checked) { anyChecked = true; break; } }
+        if (!anyChecked) { alert("Please select at least one product first!"); return; }
+        if (confirm("Are you sure to delete all selected products from database?")) {
+            document.getElementById('productBatchForm').submit();
+        }
+    }
+</script>
+{% endblock %}

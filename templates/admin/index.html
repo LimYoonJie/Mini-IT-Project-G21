@@ -1,0 +1,121 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block content %}
+<style type="text/css">
+    .el-tabs__nav .el-tabs__item:nth-child(1) .el-icon-close { display: none; }
+    * { -webkit-overflow-scrolling: touch; }
+    [v-block] { display: none; }
+    .el-menu { background-color: transparent; border-right: none; }
+    .el-main { height: 100%; overflow-y: auto !important; }
+    .logo-wrap { padding: 20px; color: #fff; font-size: 16px; font-weight: bold; background: #1f262e; text-align: center; border-bottom: 1px solid #2b3643; }
+    .el-menu-item:hover {
+        color: #409EFF !important;
+        background-color: #1f262e !important;
+    }
+    
+    .el-menu-item:hover i {
+        color: #409EFF !important;
+    }
+
+</style>
+
+<div id="main" v-block style="height: 100vh;">
+    <el-container style="height: 100%;">
+        <el-aside width="240px" style="background-color: #2b3643;">
+            <div class="logo-wrap">
+                <span>MMU Secondhand Marketplace Admin</span>
+            </div>
+            
+            <el-menu text-color="#fff" active-text-color="#409EFF" unique-opened>
+                <el-menu-item v-for="(item, index) in menus" :key="index" :index="String(index)" @click="goUrl(item.url)">
+                    <i :class="item.icon" style="margin-right: 10px; color: #fff;"></i>
+                    <span slot="title" v-text="item.name"></span>
+                </el-menu-item>
+            </el-menu>
+        </el-aside>
+
+        <el-container style="background-color: #f5f7f9;">
+            
+            <el-header class="navbar" style="font-size: 12px; padding: 15px 20px; height: auto; background-color: #2b3643; border-bottom: 2px solid #1f262e; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                <div>
+                    <h3 style="margin: 0; font-size: 16px; color: #ffffff; font-weight: 500;">
+                        Welcome Back, <i class="fas fa-user-shield" style="color: #409EFF;"></i> {{ user.username }}
+                    </h3>
+                </div>
+                <div style="display: flex; gap: 12px; align-items: center;">
+                    <el-button size="small" icon="fas fa-shopping-bag" type="success" style="font-weight: bold;" @click="window.open('/', '_blank')">
+                        View Shop Site
+                    </el-button>
+                    <form method="post" action="/admin/logout/" style="display: inline-block; margin: 0;">
+                    {% csrf_token %}
+                        <input type="hidden" name="next" value="/admin/login/">
+                        <button type="submit" style="background-color: #F56C6C; color: #ffffff; border: none; padding: 6px 12px; border-radius: 4px; font-size: 13px; font-weight: bold; cursor: pointer;">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </button>
+                    </form>
+                </div>
+            </el-header>
+            
+            <el-main style="background-color: #ffffff; padding: 30px; overflow-y: auto !important;">
+                
+                <div id="mmu-central-dashboard" style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+                    <h2 style="color: #2b3643; margin-top: 0; margin-bottom: 30px; font-weight: 600; font-size: 24px; border-left: 4px solid #409EFF; padding-left: 10px;">
+                        Overview Dashboard
+                    </h2>
+                    
+                    <div style="display: flex; gap: 25px;">
+                        
+                    <div style="background: #ffffff; padding: 25px; border-radius: 8px; flex: 1; border: 2px solid #e6e6e6; box-shadow: 0 2px 8px rgba(0,0,0,0.02);">
+                        <p style="color: #2b3643; margin: 0; font-size: 14px; font-weight: bold; border-bottom: 3px solid #409EFF; padding-bottom: 8px; display: inline-block; text-transform: uppercase;">
+                            Total Registered Users
+                        </p>
+                        <h3 style="margin: 20px 0 0 0; font-size: 36px; color: #409EFF; font-weight: bold;">
+                            {{ total_users }}
+                        </h3>
+                    </div>
+
+                    <div style="background: #ffffff; padding: 25px; border-radius: 8px; flex: 1; border: 2px solid #e6e6e6; box-shadow: 0 2px 8px rgba(0,0,0,0.02);">
+                        <p style="color: #2b3643; margin: 0; font-size: 14px; font-weight: bold; border-bottom: 3px solid #67C23A; padding-bottom: 8px; display: inline-block; text-transform: uppercase;">
+                            Total Product Listings
+                        </p>
+                        <h3 style="margin: 20px 0 0 0; font-size: 36px; color: #67C23A; font-weight: bold;">
+                            {{ total_listings }}
+                        </h3>
+                    </div>
+                        
+                    </div>
+                </div>
+            </el-main>
+        </el-container>
+
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+    new Vue({
+        el: '#main',
+        data: function() {
+            return {
+            menus: [
+                { name: 'User Management', icon: 'fas fa-users-cog', url: '/backend-member-list/' },
+                { name: 'Product Management', icon: 'fas fa-box-open', url: '/backend-goods-list/' }, 
+                { name: 'Report Management', icon: 'fas fa-bullhorn', url: '/backend-complaint-list/' },
+                { name: 'Order Management', icon: 'fas fa-shopping-cart', url: '/backend-sales-list/' }
+            ]
+
+
+            }
+        },
+        methods: {
+            goUrl: function(url) {
+                window.location.href = url;
+            },
+            logout: function() {
+                window.location.href = '/admin/login/';
+            }
+        }
+    });
+</script>
+{% endblock %}

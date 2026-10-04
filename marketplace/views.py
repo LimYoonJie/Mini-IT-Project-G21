@@ -1215,3 +1215,133 @@ def quick_admin_register(request):
         return redirect('/admin/login/')
 
     return render(request, "admin/register.html")
+
+def admin_product_view(request):
+    all_products = Product.objects.all()
+
+    if request.method == "POST":
+        action = request.POST.get('action')
+        selected_ids = request.POST.getlist('selected_products')
+        if selected_ids and action == 'delete':
+            Product.objects.filter(id__in=selected_ids).delete()
+            return redirect('/backend-goods-list/')
+
+    query = request.GET.get('q')
+    if query:
+        all_products = all_products.filter(name__icontains=query)
+    category_filter = request.GET.get('category')
+    if category_filter:
+        all_products = all_products.filter(category=category_filter)
+
+    return render(request, "admin/admin_product.html", {"products": all_products})
+
+
+def admin_order_view(request):
+    all_orders = MarketplaceOrder.objects.all()
+    
+    if request.method == "POST":
+        action = request.POST.get('action')
+        selected_ids = request.POST.getlist('selected_orders')
+        
+        if selected_ids and action:
+            if action == 'completed':
+                MarketplaceOrder.objects.filter(id__in=selected_ids).update(status='completed')
+            elif action == 'cancelled':
+                MarketplaceOrder.objects.filter(id__in=selected_ids).update(status='cancelled')
+            elif action == 'delete':
+                MarketplaceOrder.objects.filter(id__in=selected_ids).delete()
+            return redirect('/backend-sales-list/') 
+
+    status_val = request.GET.get('status')
+    if status_val:
+        all_orders = all_orders.filter(status=status_val)
+        
+    start_time = request.GET.get('start_time')
+    end_time = request.GET.get('end_time')
+    if start_time:
+        all_orders = all_orders.filter(created_at__date__gte=start_time)
+    if end_time:
+        all_orders = all_orders.filter(created_at__date__lte=end_time)
+        
+    return render(request, "admin/order.html", {"orders": all_orders})
+
+def admin_user_view(request):
+    all_users = User.objects.all()
+
+    if request.method == "POST":
+        action = request.POST.get('action')
+        selected_ids = request.POST.getlist('selected_users')
+        if selected_ids and action == 'delete':
+            User.objects.filter(id__in=selected_ids).delete()
+            return redirect('/backend-member-list/')
+
+    query = request.GET.get('q')
+    if query:
+        all_users = all_users.filter(username__icontains=query)
+        
+    status_filter = request.GET.get('status')
+    if status_filter == 'active':
+        all_users = all_users.filter(is_active=True)
+    elif status_filter == 'banned':
+        all_users = all_users.filter(is_active=False)
+        
+    return render(request, "admin/admin_user.html", {"users": all_users})
+
+
+def admin_report_view(request):
+    all_reports = ListingReport.objects.all()
+    
+    query = request.GET.get('q')
+    if query:
+        all_reports = all_reports.filter(
+            Q(product__name__icontains=query) | 
+            Q(reason__icontains=query) | 
+            Q(reporter__username__icontains=query)
+        )
+        
+    status_val = request.GET.get('status')
+    if status_val:
+        all_reports = all_reports.filter(status=status_val)
+        
+    reason_val = request.GET.get('reason')
+    if reason_val:
+        all_reports = all_reports.filter(reason=reason_val)
+        
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+    if start_date:
+        all_reports = all_reports.filter(created_at__date__gte=start_date)
+    if end_date:
+        all_reports = all_reports.filter(created_at__date__lte=end_date)
+        
+    return render(request, "admin/admin_report.html", {"reports": all_reports})
+
+def save_report_status_action(request, report_id):
+    if request.method == "POST":
+        report = get_object_or_404(ListingReport, id=report_id)
+        new_status = request.POST.get('status')
+        if new_status:
+            report.status = new_status
+            report.save()
+    return redirect('/backend-complaint-list/')
+
+def ban_user_action(request, user_id):
+    user_to_ban = get_object_or_404(User, id=user_id)
+    user_to_ban.is_active = False
+    user_to_ban.save()
+    return redirect('/backend-member-list/')
+
+def unban_user_action(request, user_id):
+    user_to_unban = get_object_or_404(User, id=user_id)
+    user_to_unban.is_active = True
+    user_to_unban.save()
+    return redirect('/backend-member-list/')
+
+def admin_index_view(request):
+    total_users_count = User.objects.count()
+    total_listings_count = Product.objects.count()
+    
+    return render(request, "admin/index.html", {
+        "total_users": total_users_count,
+        "total_listings": total_listings_count
+    })

@@ -1,32 +1,40 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Register Administrator</title>
+    <title>Register Admin</title>
 </head>
-<body style="font-family: sans-serif; display: flex; justify-content: center; margin-top: 100px; background-color: #f0f2f5;">
-    <form method="post" style="border: 1px solid #dcdfe6; padding: 40px; border-radius: 6px; background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.05); width: 350px;">
+<body style="font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background-color: #2b3643; margin: 0; padding: 0;">
+    
+    <form method="post" style="border: 1px solid #dcdfe6; padding: 40px; border-radius: 8px; background: white; box-shadow: 0 4px 16px rgba(0,0,0,0.2); width: 350px;">
         {% csrf_token %}
-        <h2 style="text-align: center; color: #303133; margin-bottom: 25px;">Register Admin Account</h2>
+        <h2 style="text-align: center; color: #2b3643; margin-top: 0; margin-bottom: 25px; font-weight: bold;">Register Admin Account</h2>
         
         <p style="margin-bottom: 15px;">
-            <label style="display: block; margin-bottom: 5px; font-weight: 500;">MMU Email Prefix:</label>
-            <input type="text" name="prefix" placeholder="e.g. zhenhaong" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
-            <span style="font-size: 12px; color: #909399;">@student.mmu.edu.my</span>
+            <label style="display: block; margin-bottom: 5px; font-weight: bold; font-size: 13px; color: #606266;">MMU Email Prefix:</label>
+            <input type="text" name="prefix" placeholder="e.g. lim.yoon.jie" required style="width: 100%; padding: 10px; border: 1px solid #dcdfe6; border-radius: 4px; box-sizing: border-box; outline: none;">
+            <span style="font-size: 12px; color: #909399; display: block; margin-top: 4px;">@student.mmu.edu.my</span>
         </p>
         
         <p style="margin-bottom: 15px;">
-            <label style="display: block; margin-bottom: 5px; font-weight: 500;">Internal Secret Key:</label>
-            <input type="password" name="secret" placeholder="Enter security key (mmu2026)" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+            <label style="display: block; margin-bottom: 5px; font-weight: bold; font-size: 13px; color: #606266;">Internal Secret Key:</label>
+            <input type="password" name="secret" placeholder="Enter security key (mmu2026)" required style="width: 100%; padding: 10px; border: 1px solid #dcdfe6; border-radius: 4px; box-sizing: border-box; outline: none;">
         </p>
         
         <p style="margin-bottom: 25px;">
-            <label style="display: block; margin-bottom: 5px; font-weight: 500;">Set Admin Password:</label>
-            <input type="password" name="pwd" placeholder="Create your login password" required style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box;">
+            <label style="display: block; margin-bottom: 5px; font-weight: bold; font-size: 13px; color: #606266;">Set Admin Password:</label>
+            <input type="password" name="pwd" placeholder="Create your login password" required style="width: 100%; padding: 10px; border: 1px solid #dcdfe6; border-radius: 4px; box-sizing: border-box; outline: none;">
         </p>
         
-        <button type="submit" style="width: 100%; padding: 12px; background: #909399; color: white; border: none; border-radius: 4px; font-size: 15px; cursor: pointer; font-weight: 500;">
+        <button type="submit" style="width: 100%; padding: 12px; background: #67C23A; color: white; border: none; border-radius: 4px; font-size: 15px; cursor: pointer; font-weight: bold; transition: background 0.2s;">
             Verify and Create Admin
         </button>
+
+        <div style="margin-top: 20px; text-align: center; border-top: 1px solid #f2f6fc; padding-top: 15px;">
+            <a href="/admin/login/" style="color: #409EFF; text-decoration: none; font-size: 13px; font-weight: 500;">
+                ← Cancel and Go to Login
+            </a>
+        </div>
     </form>
+
 </body>
 </html>

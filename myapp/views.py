@@ -1,23 +1,10 @@
 from django.shortcuts import render, get_object_or_404
+from django.contrib.admin.views.decorators import staff_member_required
 from .models import Product
 from .models import Order
 
 def home(request):
     return render(request, "home.html")
-
-def products(request):
-    products = Product.objects.all()
-    return render(request, "products.html", {"products": products})
-
-def product_detail(request, pk):
-    product = get_object_or_404(Product, pk=pk)
-    return render(request, "product-details.html", {"product": product})
-
-def about(request):
-    return render(request, "about.html")
-
-def contact(request):
-    return render(request, "contact.html")
 
 def checkout_success_view(request, product_id):
     product = get_object_or_404(Product, id=product_id)
@@ -32,3 +19,14 @@ def checkout_success_view(request, product_id):
     if hasattr(product, 'status'):
         product.status = 'sold'
         product.save()
+
+@staff_member_required
+def admin_product_view(request):
+    all_products = Product.objects.all()
+    return render(request, "admin_products.html", {"products": all_products})
+
+
+@staff_member_required
+def admin_order_view(request):
+    all_orders = Order.objects.all()
+    return render(request, "orders.html", {"orders": all_orders})

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+{% load i18n static %}
+<html lang="en-us">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MMU Central Admin Login</title>
+    <link rel="stylesheet" href="{% static 'admin/theme/index.css' %}">
+    <link rel="stylesheet" href="{% static 'admin/css/base.css' %}">
+    <link rel="stylesheet" href="{% static 'admin/fontawesome-free/css/all.min.css' %}">
+    
+    <style>
+        body { background-color: #2b3643; margin: 0; padding: 0; font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        .login-card { background: #fff; padding: 40px; border-radius: 8px; box-shadow: 0 4px 16px rgba(0,0,0,0.2); width: 360px; }
+        .login-title { margin-top: 0; margin-bottom: 25px; text-align: center; color: #2b3643; font-size: 20px; font-weight: bold; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-size: 13px; color: #606266; margin-bottom: 8px; font-weight: bold; }
+        .form-input { width: 100%; padding: 10px 12px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px; box-sizing: border-box; outline: none; transition: border-color 0.2s; }
+        .form-input:focus { border-color: #409EFF; }
+        .submit-btn { width: 100%; background-color: #409EFF; color: #fff; border: none; padding: 12px; border-radius: 4px; font-size: 14px; font-weight: bold; cursor: pointer; transition: background-color 0.2s; }
+        .submit-btn:hover { background-color: #66b1ff; }
+        .error-msg { background-color: #fef0f0; color: #f56c6c; padding: 10px; border-radius: 4px; font-size: 12px; margin-bottom: 15px; border: 1px solid #fde2e2; }
+    </style>
+</head>
+<body>
+
+<div class="login-card">
+    <div class="login-title">
+        <i class="fas fa-university" style="color: #409EFF; margin-right: 5px;"></i>
+        MMU Admin Portal
+    </div>
+
+    <form method="post" action="{{ app_path }}">
+        {% csrf_token %}
+        
+        {% if form.errors and not form.non_field_errors %}
+            <div class="error-msg">Please enter a correct username and password.</div>
+        {% endif %}
+        {% if form.non_field_errors %}
+            {% for error in form.non_field_errors %}
+                <div class="error-msg">{{ error }}</div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="form-group">
+            <label for="id_username">USERNAME</label>
+            <input type="text" name="username" id="id_username" class="form-input" placeholder="Enter admin username" required autofocus>
+        </div>
+
+        <div class="form-group">
+            <label for="id_password">PASSWORD</label>
+            <input type="password" name="password" id="id_password" class="form-input" placeholder="Enter security password" required>
+        </div>
+
+        <input type="hidden" name="next" value="{{ next }}">
+
+        <button type="submit" class="submit-btn">
+            Log In <i class="fas fa-sign-in-alt" style="margin-left: 5px;"></i>
+        </button>
+        <div style="margin-top: 20px; text-align: center; border-top: 1px solid #f2f6fc; padding-top: 15px;">
+            <span style="font-size: 13px; color: #909399;">Authorized staff member?</span>
+            <a href="/admin-register/" style="color: #409EFF; text-decoration: none; font-size: 13px; font-weight: bold; margin-left: 5px;">
+                Register Portal →
+            </a>
+        </div>
+    </form>
+</div>
+
+</body>
+</html>
